@@ -6,12 +6,36 @@ var Connection = require('ssh2');
 var net = require('net');
 
 
-function SSHTunnel(config) {
-    this._verbose = config.verbose || false;
-    this._config = config;
-    this._shutdown = false;
+function SSHTunnel(config, callback) {
+    var self = this;
+    self._verbose = config.verbose || false;
+    self._config = config;
+    self._shutdown = false;
+    if(callback){
+        self.connect(callback);
+    }
 }
 
+SSHTunnel.prototype.create = function (callback) {
+    var self = this;
+    var remotePort = self._config.remotePort;
+    var c = new Connection();
+    c.on('ready', function () {
+        c.forwardOut('127.0.0.1', remotePort, '127.0.0.1', remotePort, callback);
+    });
+
+    c.on('error', function (err) {
+        self.log('Connection :: error :: ' + err);
+    });
+    c.on('end', function () {
+        self.log('Connection :: end');
+    });
+    c.on('close', function (err) {
+        self.log('Connection :: close');
+        c.end();
+    });
+    c.connect(self._config.sshConfig);
+};
 
 SSHTunnel.prototype.log = function () {
     if (this._verbose) {
@@ -21,40 +45,15 @@ SSHTunnel.prototype.log = function () {
 
 SSHTunnel.prototype.end = function () {
     var self = this;
-    self._shutdown = true;
-    self.connection.end();
+    self.server.end();
 };
 
 SSHTunnel.prototype.connect = function (callback) {
-
-    var self = this,
-        remotePort = this._config.remotePort,
-        localPort = this._config.localPort,
-        sshConfig = this._config.sshConfig;
-
-    callback = callback || function () {
-    };
-
-
-    if (self.connection) {
-        try {
-            self.connection.end();
-            self.server.close();
-            self.server = null;
-        } catch (e) {
-
-            self.log('error close', e);
-        }
-    }
-
-    var c = self.connection = new Connection();
-
-    c.on('ready', function () {
-        //console.log('Connection :: ready');
-        c.forwardOut('127.0.0.1', remotePort, '127.0.0.1', remotePort, function (error, stream) {
-            if (error) {
-                return callback(error);
-            }
+    var self = this;
+    self.server = net.createServer(function (connection) {
+        self.create(function(error, stream){
+            connection.pipe(stream);
+            stream.pipe(connection);
 
             stream.on('data', function (data) {
                 self.log('TCP :: DATA: ' + data);
@@ -63,46 +62,14 @@ SSHTunnel.prototype.connect = function (callback) {
             stream.on('error', function (err) {
                 self.log('TCP :: ERROR: ' + err);
                 self.log('RECONNECTING');
-                self.connect();
             });
 
-            stream.on('close', function (had_err) {
-                c.end();
-            });
-
-            if (self.server) {
-                self.server.close();
-                self.server = null;
-            }
-            self.server = net.createServer(function (socket) {
-                socket.pipe(stream);
-                stream.pipe(socket);
-            });
-
-            self.server.listen(localPort, function (error) {
-                self.log('listen !');
-                if (error) {
-                    return callback(error);
-                } else {
-                    callback(null, self);
-                }
+            stream.on('close', function (err) {
+                console.log('STREAM::close');
             });
         });
     });
-
-    c.on('error', function (err) {
-        self.log('Connection :: error :: ' + err);
-    });
-    c.on('end', function () {
-        self.log('Connection :: end');
-    });
-    c.on('close', function (hadError) {
-        self.log('Connection :: close');
-        if (self.server) {
-            self.server.close();
-        }
-    });
-    c.connect(sshConfig);
-}
+    self.server.listen(self._config.localPort, callback);
+};
 
 module.exports = SSHTunnel;
