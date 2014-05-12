@@ -1,0 +1,17 @@
+{
+  "name": "tunnel-ssh",
+  "version": "0.0.1",
+  "description": "Easy ssh tunneling",
+  "main": "index.js",
+  "scripts": {
+  },
+  "keywords": [
+        "tunnel",
+        "ssh"
+  ],
+  "author": "christoph.hagenbrock@googlemail.com",
+  "license": "ISC",
+  "dependencies": {
+    "ssh2": "^0.2.23"
+  }
+}
