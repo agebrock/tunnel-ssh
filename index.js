@@ -1,7 +1,3 @@
-/**
- * test to connect to mongoDB via ssh2
- **/
-
 var Connection = require('ssh2');
 var net = require('net');
 
@@ -23,19 +19,19 @@ SSHTunnel.prototype.log = function () {
 
 SSHTunnel.prototype.close = function (callback) {
     var self = this;
-    this.server.close(function(error){
+    this.server.close(function (error) {
         self.connection.end();
-        if(callback){
+        if (callback) {
             callback(error);
         }
     });
 };
 
 SSHTunnel.prototype.connect = function (callback) {
-    var self = this;
-    var remotePort = self._config.remotePort;
-    var localPort = self._config.localPort;
-    var c = self.connection =  new Connection();
+    var self = this,
+        remotePort = self._config.remotePort,
+        localPort = self._config.localPort,
+        c = self.connection = new Connection();
 
     c.on('ready', function () {
 
