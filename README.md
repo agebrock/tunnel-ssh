@@ -12,7 +12,7 @@ Simple SSH tunneling in node.js
         remotePort: 27017, //localport
         localPort: 27017, //remoteport
         verbose: true, // dump information to stdout
-        sshConfig: { //ssh2 configuration
+        sshConfig: { //ssh2 configuration (https://github.com/mscdex/ssh2)
             host: '<yourRemoteIp>',
             port: 22,
             username: 'root',
@@ -21,11 +21,13 @@ Simple SSH tunneling in node.js
         }
     };
 
-    var x = new Tunnel(config);
-    x.connect(function (error) {
+    var tunnel = new Tunnel(config);
+    tunnel.connect(function (error) {
         console.log(error);
-        // start useing the tunnel
-        // Bsp. Try mongo shell "#mongo"
+        //or start your remote connection here .... 
+        //mongoose.connect(...);
 
-        //or start your mongo connection here ....
+
+        //close tunnel to exit script 
+        tunnel.close();
     });

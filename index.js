@@ -10,32 +10,10 @@ function SSHTunnel(config, callback) {
     var self = this;
     self._verbose = config.verbose || false;
     self._config = config;
-    self._shutdown = false;
-    if(callback){
+    if (callback) {
         self.connect(callback);
     }
 }
-
-SSHTunnel.prototype.create = function (callback) {
-    var self = this;
-    var remotePort = self._config.remotePort;
-    var c = new Connection();
-    c.on('ready', function () {
-        c.forwardOut('127.0.0.1', remotePort, '127.0.0.1', remotePort, callback);
-    });
-
-    c.on('error', function (err) {
-        self.log('Connection :: error :: ' + err);
-    });
-    c.on('end', function () {
-        self.log('Connection :: end');
-    });
-    c.on('close', function (err) {
-        self.log('Connection :: close');
-        c.end();
-    });
-    c.connect(self._config.sshConfig);
-};
 
 SSHTunnel.prototype.log = function () {
     if (this._verbose) {
@@ -43,33 +21,71 @@ SSHTunnel.prototype.log = function () {
     }
 };
 
-SSHTunnel.prototype.end = function () {
+SSHTunnel.prototype.close = function (callback) {
     var self = this;
-    self.server.end();
+    this.server.close(function(error){
+        self.connection.end();
+        if(callback){
+            callback(error);
+        }
+    });
 };
 
 SSHTunnel.prototype.connect = function (callback) {
     var self = this;
-    self.server = net.createServer(function (connection) {
-        self.create(function(error, stream){
-            connection.pipe(stream);
-            stream.pipe(connection);
+    var remotePort = self._config.remotePort;
+    var localPort = self._config.localPort;
+    var c = self.connection =  new Connection();
 
-            stream.on('data', function (data) {
-                self.log('TCP :: DATA: ' + data);
-            });
+    c.on('ready', function () {
 
-            stream.on('error', function (err) {
-                self.log('TCP :: ERROR: ' + err);
-                self.log('RECONNECTING');
-            });
+        self.server = net.createServer(function (connection) {
+            var buffers = [];
 
-            stream.on('close', function (err) {
-                console.log('STREAM::close');
+            var addBuffer = function (data) {
+                buffers.push(data);
+            };
+
+            connection.on('data', addBuffer);
+
+            c.forwardOut('', 0, '127.0.0.1', remotePort, function (error, ssh) {
+                while (buffers.length) {
+                    ssh.write(buffers.shift());
+                }
+                connection.removeListener('data', addBuffer);
+
+                ssh.on('data', function (buf) {
+                    connection.write(buf);
+                });
+                connection.on('data', function (buf) {
+                    ssh.write(buf);
+                });
+                connection.on('end', function () {
+                    self.log('connection::end');
+                    ssh.removeAllListeners();
+                    ssh.end();
+                });
+                ssh.on('end', function () {
+                    self.log('ssh::end');
+                    connection.removeAllListeners();
+                    connection.end();
+                });
             });
         });
+        self.server.listen(localPort, callback);
     });
-    self.server.listen(self._config.localPort, callback);
+
+    c.on('error', function (err) {
+        self.log('ssh2::error:: ' + err);
+    });
+    c.on('end', function () {
+        self.log('ssh2::end');
+    });
+    c.on('close', function (err) {
+        self.log('ssh2::close');
+    });
+
+    c.connect(self._config.sshConfig);
 };
 
 module.exports = SSHTunnel;
