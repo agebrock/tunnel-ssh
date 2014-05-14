@@ -12,6 +12,7 @@ Simple SSH tunneling in node.js
         remotePort: 27017, //localport
         localPort: 27017, //remoteport
         verbose: true, // dump information to stdout
+        disabled: false, //set this to true to disable tunnel (useful to keep architecture for local connections)
         sshConfig: { //ssh2 configuration (https://github.com/mscdex/ssh2)
             host: '<yourRemoteIp>',
             port: 22,

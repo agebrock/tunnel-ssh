@@ -29,9 +29,15 @@ SSHTunnel.prototype.close = function (callback) {
 
 SSHTunnel.prototype.connect = function (callback) {
     var self = this,
+        disabled = self._config.disabled,
         remotePort = self._config.remotePort,
-        localPort = self._config.localPort,
-        c = self.connection = new Connection();
+        localPort = self._config.localPort;
+
+
+    if(disabled){
+        return callback(null);
+    }
+    var c = self.connection = new Connection();
 
     c.on('ready', function () {
 
