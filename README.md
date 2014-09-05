@@ -35,7 +35,8 @@ Simple SSH tunneling in node.js
 ## Example (create a tunnel for mysql) ##
 ```javascript
     var config = {
-        remotePort: 3306, 
+        remoteHost: '<mysql server host>', // mysql server host
+        remotePort: 3306, // mysql server port
         localPort: 33333, // a available local port
         verbose: true, // dump information to stdout
         disabled: false, //set this to true to disable tunnel (useful to keep architecture for local connections)
