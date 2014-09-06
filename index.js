@@ -32,7 +32,7 @@ SSHTunnel.prototype.connect = function (callback) {
         disabled = self._config.disabled,
         remotePort = self._config.remotePort,
         localPort = self._config.localPort,
-        remoteHost = sefl._config.remoteHost;
+        remoteHost = sefl._config.remoteHost || '127.0.0.1';
 
 
     if(disabled){
