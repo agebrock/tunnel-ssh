@@ -31,7 +31,8 @@ SSHTunnel.prototype.connect = function (callback) {
     var self = this,
         disabled = self._config.disabled,
         remotePort = self._config.remotePort,
-        localPort = self._config.localPort;
+        localPort = self._config.localPort,
+        remoteHost = sefl._config.remoteHost || '127.0.0.1';
 
 
     if(disabled){
@@ -50,7 +51,7 @@ SSHTunnel.prototype.connect = function (callback) {
 
             connection.on('data', addBuffer);
 
-            c.forwardOut('', 0, '127.0.0.1', remotePort, function (error, ssh) {
+            c.forwardOut('', 0, remoteHost, remotePort, function (error, ssh) {
                 while (buffers.length) {
                     ssh.write(buffers.shift());
                 }
