@@ -32,7 +32,7 @@ SSHTunnel.prototype.connect = function (callback) {
         disabled = self._config.disabled,
         remotePort = self._config.remotePort,
         localPort = self._config.localPort,
-        remoteHost = sefl._config.remoteHost || '127.0.0.1';
+        remoteHost = self._config.remoteHost || '127.0.0.1';
 
 
     if(disabled){
@@ -76,10 +76,17 @@ SSHTunnel.prototype.connect = function (callback) {
             });
         });
         self.server.listen(localPort, callback);
+
+        // handle error when self.server.listen fails (e.g. port is already used)
+        self.server.on('error', function(err){
+            callback(err);
+            self.connection.end();
+        });
     });
 
     c.on('error', function (err) {
         self.log('ssh2::error:: ' + err);
+        callback(err);
     });
     c.on('end', function () {
         self.log('ssh2::end');
