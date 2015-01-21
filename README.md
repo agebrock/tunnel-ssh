@@ -7,6 +7,7 @@ Simple SSH tunneling in node.js
     npm install tunnel-ssh
 
 ## Example (connect to remote mongo) ##
+    var Tunnel = require('tunnel-ssh');
 
     var config = {
         remotePort: 27017, //localport
