@@ -28,6 +28,7 @@ SSHTunnel.prototype.close = function (callback) {
 };
 
 SSHTunnel.prototype.connect = function (callback) {
+    callback = (callback)? callback : function(err){if (err) this.log(err);}.bind(this);
     var self = this,
         disabled = self._config.disabled,
         remotePort = self._config.remotePort,
