@@ -19,7 +19,11 @@ Simple SSH tunneling in node.js
             username: 'root',
             privateKey: require('fs').readFileSync('<pathToKeyFile>'),
             passphrase: 'verySecretString' // option see ssh2 config
-        }
+        },
+        onReady: function() {console.log("Tunnel ready.")},
+        onError: function(err) {console.log("Got an error:",err)},
+        onClose: function(){console.log("Connection closed.");},
+        onEnd: function(){console.log("Connection ended.");}
     };
 
     var tunnel = new Tunnel(config);
@@ -46,7 +50,11 @@ Simple SSH tunneling in node.js
             username: 'root',
             privateKey: require('fs').readFileSync('<pathToKeyFile>'),
             passphrase: 'verySecretString' // option see ssh2 config
-        }
+        },
+        onReady: function() {console.log("Tunnel ready.")},
+        onError: function(err) {console.log("Got an error:",err)},
+        onClose: function(){console.log("Connection closed.");},
+        onEnd: function(){console.log("Connection ended.");}
     };
 
     var tunnel = new Tunnel(config);
