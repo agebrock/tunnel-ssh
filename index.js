@@ -19,12 +19,19 @@ SSHTunnel.prototype.log = function () {
 
 SSHTunnel.prototype.close = function (callback) {
     var self = this;
-    this.server.close(function (error) {
-        self.connection.end();
+    if (!this.server) {
         if (callback) {
-            callback(error);
+            callback();
         }
-    });
+    }
+    else {
+        this.server.close(function (error) {
+            self.connection.end();
+            if (callback) {
+                callback(error);
+            }
+        });
+    }
 };
 
 SSHTunnel.prototype.connect = function (callback) {
