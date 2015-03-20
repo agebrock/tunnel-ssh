@@ -7,7 +7,7 @@ function createConfig(userConfig) {
     var env = process.env;
 
     var config = _.defaults(userConfig || {}, {
-        username: env.TUNNELSSH_USER ||  env.USER || env.USERNAME,
+        username: env.TUNNELSSH_USER || env.USER || env.USERNAME,
         port: 22,
         srcPort: 0,
         srcHost: 'localhost',
@@ -48,6 +48,10 @@ function bindSSHConnection(config, server, netConnection) {
                 }
                 sshStream.once('close', function () {
                     sshConnection.end();
+                    if (!config.keepAlive) {
+                        netConnection.end();
+                        server.close();
+                    }
                 });
                 server.emit('sshStream', sshStream, sshConnection, netConnection, server);
                 netConnection.pipe(sshStream).pipe(netConnection);
