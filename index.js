@@ -110,6 +110,7 @@ SSHTunnel.prototype.connect = function (callback) {
     });
     c.on('end', function () {
         if (typeof onEnd == 'function') onEnd();
+        self.server.close();
         self.log('ssh2::end');
     });
     c.on('close', function (err) {
