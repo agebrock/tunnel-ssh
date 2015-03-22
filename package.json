@@ -1,6 +1,6 @@
 {
   "name": "tunnel-ssh",
-  "version": "1.0.0rc1",
+  "version": "1.0.0",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "scripts": {},

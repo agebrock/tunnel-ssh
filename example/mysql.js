@@ -1,6 +1,6 @@
-var tunnel = require('../');
-
+var tunnel = require('../'),
     mysql = require('mysql');
+
 
 
 var config = {
@@ -9,7 +9,6 @@ var config = {
     dstPort: 3306,
     localPort: 44444
 };
-
 
 var server = tunnel(config, function (error, result) {
 
@@ -21,21 +20,15 @@ var server = tunnel(config, function (error, result) {
         password: "somePass*"
     });
 
-    conn.end(function(err) {
+    conn.end(function (err) {
         console.log("MYSQL::END");
     });
 });
 
-
-
-
-
-server.on('sshStream', function (sshStream, sshConnection, netConnection, server) {
+server.on('sshStream', function (sshStream) {
     sshStream.on('close', function () {
         console.log('TCP :: CLOSED');
     }).on('data', function (data) {
         console.log('TCP :: DATA: ');
     });
 });
-
-

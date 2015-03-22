@@ -7,6 +7,9 @@ This is a public test of the upcoming release 1.0.0
 ## Examples ##
 
 See the examples for further configuration options.
+The config object is passed to the ssh2 config, 
+if you have problems connecting to a server check the [ssh2](https://github.com/mscdex/ssh2)
+ docs.
 
 Minimal:
 ```js
@@ -39,6 +42,3 @@ Map local port to 3000
     });
 ```
 
-## Roadmap ##
- - project based config via ENV
- - auto reconnect after disconnect

@@ -8,7 +8,7 @@ function createConfig(userConfig) {
 
     var config = _.defaults(userConfig || {}, {
         username: env.TUNNELSSH_USER || env.USER || env.USERNAME,
-        port: 22,
+        sshPort: 22,
         srcPort: 0,
         srcHost: 'localhost',
         dstPort: null,

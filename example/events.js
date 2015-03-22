@@ -20,15 +20,17 @@ var server = tunnel(config, function () {
 });
 
 /**
- *  left to right => small to large (server is the biggest / root,  sshStream the smnallest)
+ *  the server will emit every object created, arguments are always in the same order.
  */
 server.on('sshStream', function (sshStream, sshConnection, netConnection, server) {
 
     sshStream.on('close', function () {
         console.log('TCP :: CLOSED');
-            netConnection.end();
-            server.close();
     });
 });
+
+server.on('sshConnection', function (sshConnection, netConnection, server) {});
+
+server.on('netConnection',function(netConnection, server){});
 
 
