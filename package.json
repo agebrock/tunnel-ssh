@@ -1,17 +1,26 @@
 {
   "name": "tunnel-ssh",
-  "version": "0.0.5",
-  "description": "Easy ssh tunneling",
+  "version": "1.0.0",
+  "description": "Easy extendable SSH tunnel",
   "main": "index.js",
-  "scripts": {
+  "scripts": {},
+  "repository": {
+    "type":"git",
+    "url":"https://github.com/Finanzchef24-GmbH/tunnel-ssh"
   },
   "keywords": [
-        "tunnel",
-        "ssh"
+    "tunnel",
+    "ssh",
+    "mysql"
   ],
-  "author": "christoph.hagenbrock@googlemail.com",
+  "author": {
+    "name": "Christoph Hagenbrock",
+    "email": "christoph.hagenbrock@googlemail.com"
+  },
   "license": "ISC",
   "dependencies": {
-    "ssh2": "^0.2.23"
+    "debug": "^2.1.3",
+    "lodash": "^3.5.0",
+    "ssh2": "^0.2.25"
   }
 }

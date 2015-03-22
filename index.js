@@ -1,110 +1,73 @@
-var Connection = require('ssh2');
 var net = require('net');
+var debug = require('debug')('tunnel-ssh');
+var _ = require('lodash');
+var Connection = require('ssh2');
 
+function createConfig(userConfig) {
+    var env = process.env;
 
-function SSHTunnel(config, callback) {
-    var self = this;
-    self._verbose = config.verbose || false;
-    self._config = config;
-    if (callback) {
-        self.connect(callback);
+    var config = _.defaults(userConfig || {}, {
+        username: env.TUNNELSSH_USER || env.USER || env.USERNAME,
+        sshPort: 22,
+        srcPort: 0,
+        srcHost: 'localhost',
+        dstPort: null,
+        dstHost: 'localhost',
+        localHost: 'localhost'
+
+    });
+    if (!config.password && !config.privateKey) {
+        config.agent = config.agent || process.env.SSH_AUTH_SOCK;
     }
+
+    if (!config.dstPort || !config.dstHost || !config.host) {
+        throw new Error('invalid configuration.')
+    }
+
+    if (!config.localPort) {
+        config.localPort = config.dstPort;
+    }
+
+    return config;
 }
 
-SSHTunnel.prototype.log = function () {
-    if (this._verbose) {
-        console.log.apply(null, arguments);
-    }
-};
+function bindSSHConnection(config, server, netConnection) {
 
-SSHTunnel.prototype.close = function (callback) {
-    var self = this;
-    this.server.close(function (error) {
-        self.connection.end();
-        if (callback) {
-            callback(error);
-        }
-    });
-};
-
-SSHTunnel.prototype.connect = function (callback) {
-    var self = this,
-        disabled = self._config.disabled,
-        remotePort = self._config.remotePort,
-        localPort = self._config.localPort,
-        remoteHost = self._config.remoteHost || '127.0.0.1';
-
-
-    if(disabled){
-        return callback(null);
-    }
-    var c = self.connection = new Connection();
-
-    c.on('ready', function () {
-
-        self.server = net.createServer(function (connection) {
-            var buffers = [];
-
-            var addBuffer = function (data) {
-                buffers.push(data);
-            };
-
-            connection.on('data', addBuffer);
-
-            c.forwardOut('', 0, remoteHost, remotePort, function (error, ssh) {
-                if (error){
-                    // close connection
-                    connection.removeAllListeners();
-                    connection.end();
-
-                    c.emit('error', error);
-                    return;
+    var sshConnection = new Connection();
+    sshConnection.on('ready', function () {
+        //sshConnection._sock.unref();
+        //server.unref();
+        server.emit('sshConnection', sshConnection, netConnection, server);
+        sshConnection.forwardOut(
+            config.srcHost,
+            config.srcPort,
+            config.dstHost,
+            config.dstPort, function (err, sshStream) {
+                if (err) {
+                    throw err;
                 }
-
-                while (buffers.length) {
-                    ssh.write(buffers.shift());
-                }
-                connection.removeListener('data', addBuffer);
-
-                ssh.on('data', function (buf) {
-                    connection.write(buf);
+                sshStream.once('close', function () {
+                    sshConnection.end();
+                    if (!config.keepAlive) {
+                        netConnection.end();
+                        server.close();
+                    }
                 });
-                connection.on('data', function (buf) {
-                    ssh.write(buf);
-                });
-                connection.on('end', function () {
-                    self.log('connection::end');
-                    ssh.removeAllListeners();
-                    ssh.end();
-                });
-                ssh.on('end', function () {
-                    self.log('ssh::end');
-                    connection.removeAllListeners();
-                    connection.end();
-                });
+                server.emit('sshStream', sshStream, sshConnection, netConnection, server);
+                netConnection.pipe(sshStream).pipe(netConnection);
             });
-        });
-        self.server.listen(localPort, callback);
-
-        // handle error when self.server.listen fails (e.g. port is already used)
-        self.server.on('error', function(err){
-            callback(err);
-            self.connection.end();
-        });
     });
+    return sshConnection;
+}
 
-    c.on('error', function (err) {
-        self.log('ssh2::error:: ' + err);
-        callback(err);
+function tunnel(configArgs, callback) {
+    var config = createConfig(configArgs);
+    var server = net.createServer(function (netConnection) {
+        server.emit('netConnection', netConnection, server);
+        bindSSHConnection(config, server, netConnection).connect(config)
     });
-    c.on('end', function () {
-        self.log('ssh2::end');
-    });
-    c.on('close', function (err) {
-        self.log('ssh2::close');
-    });
+    server.listen(config.localPort, config.localHost, callback);
+    return server;
+}
 
-    c.connect(self._config.sshConfig);
-};
-
-module.exports = SSHTunnel;
+module.exports = tunnel;
