@@ -24,7 +24,7 @@ function createConfig(userConfig) {
         throw new Error('invalid configuration.')
     }
 
-    if (!config.localPort) {
+    if (config.localPort===undefined) {
         config.localPort = config.dstPort;
     }
 
