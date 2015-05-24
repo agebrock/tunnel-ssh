@@ -1,7 +1,6 @@
 Tunnel-SSH
 ==========
 
-This is a public test of the upcoming release 1.0.0
 
 
 ## Examples ##
