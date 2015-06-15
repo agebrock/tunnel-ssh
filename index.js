@@ -1,5 +1,4 @@
 var net = require('net');
-var debug = require('debug')('tunnel-ssh');
 var Connection = require('ssh2');
 
 var env = process.env;
@@ -26,7 +25,7 @@ function createConfig(userConfig) {
   }
   
   if (!config.dstPort || !config.dstHost || !config.host) {
-    throw new Error('invalid configuration.')
+    throw new Error('invalid configuration.');
   }
   
   if (config.localPort === undefined) {
@@ -38,7 +37,7 @@ function createConfig(userConfig) {
 
 var queue = [];
 var queuingConnectListener = function (netConnection) {
-  queue.push(netConnection)
+  queue.push(netConnection);
 };
 
 function bindSSHConnection(config, server) {
@@ -84,13 +83,17 @@ function tunnel(configArgs, callback) {
   server.on('connection', queuingConnectListener);
 
   server.listen(config.localPort, config.localHost, function (err) {
+    if (err) {
+      return callback(err);
+    }
+
     var sshConnection = bindSSHConnection(config, server);
     sshConnection.connect(config);
     sshConnection.on('close', function () {
       server.close();
     });
 
-    return callback(err);
+    return callback();
   });
 
   return server;
