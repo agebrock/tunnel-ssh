@@ -47,8 +47,8 @@ function bindSSHConnection(config, server, netConnection) {
                     throw err;
                 }
                 sshStream.once('close', function () {
-                    sshConnection.end();
                     if (!config.keepAlive) {
+                        sshConnection.end();
                         netConnection.end();
                         server.close();
                     }
