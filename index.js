@@ -1,5 +1,4 @@
 var net = require('net');
-var debug = require('debug')('tunnel-ssh');
 var _ = require('lodash');
 var Connection = require('ssh2');
 
@@ -46,6 +45,7 @@ function bindSSHConnection(config, server, netConnection) {
                     throw err;
                 }
                 sshStream.once('close', function() {
+                    if (!config.keepAlive) {
                         sshConnection.end();
                         netConnection.end();
                         server.close();
@@ -71,29 +71,13 @@ function createListener(server) {
     return server;
 }
 
-function createListener(server) {
-    server._conns = [];
-    server.on('sshConnection', function(sshConnection, netConnection, server) {
-        server._conns.push(sshConnection, netConnection);
-    });
-    server.on('close', function() {
-        server._conns.forEach(function(connection) {
-            connection.end();
-        });
-    });
-    return server;
-}
-
 function tunnel(configArgs, callback) {
     var config = createConfig(configArgs);
     var server = net.createServer(function(netConnection) {
         server.emit('netConnection', netConnection, server);
         bindSSHConnection(config, server, netConnection).connect(config);
     });
-    createListener(server);
-    createListener(server);
-    server.listen(config.localPort, config.localHost, callback);
-    return server;
+    return createListener(server).listen(config.localPort, config.localHost, callback);
 }
 
 module.exports = tunnel;
