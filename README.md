@@ -59,7 +59,7 @@ Map local port to 3000
     dstHost: 'localhost',
     localHost: 'localhost'
     agent : process.env.SSH_AUTH_SOCK,
-    privateKey:'~/.ssh/foo_rsa',
+    privateKey:require('fs').readFileSync('/here/is/my/key'),
     password:'secret'
 } 
 
