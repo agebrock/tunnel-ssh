@@ -75,7 +75,10 @@ function tunnel(configArgs, callback) {
     var config = createConfig(configArgs);
     var server = net.createServer(function(netConnection) {
         server.emit('netConnection', netConnection, server);
-        bindSSHConnection(config, server, netConnection).connect(config);
+        var sshConnection = bindSSHConnection(config, server, netConnection);
+        if(config["keyboard-interactive"])
+            sshConnection.on("keyboard-interactive", config["keyboard-interactive"]);
+        sshConnection.connect(config);
     });
     return createListener(server).listen(config.localPort, config.localHost, callback);
 }
