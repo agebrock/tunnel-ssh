@@ -33,8 +33,10 @@ function createConfig(userConfig) {
 function bindSSHConnection(config, server, netConnection) {
 
     var sshConnection = new Connection();
-    server.emit('sshConnection', sshConnection, netConnection, server);
+    server.emit('sshConnectionCreated');
+
     sshConnection.on('ready', function() {
+        server.emit('sshConnection', sshConnection, netConnection, server);
 
         sshConnection.forwardOut(
             config.srcHost,
