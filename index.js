@@ -42,8 +42,7 @@ function bindSSHConnection(config, server, netConnection) {
             config.dstHost,
             config.dstPort, function(err, sshStream) {
                 if (err) {
-                    server.emit('error', err);
-                    return;
+                    throw err;
                 }
                 sshStream.once('close', function() {
                     if (!config.keepAlive) {
