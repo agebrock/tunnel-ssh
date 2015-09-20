@@ -74,7 +74,6 @@
     "switch"
   ],
   "requireDollarBeforejQueryAssignment": true,
-  "requireFunctionDeclarations": true,
   "requireLineBreakAfterVariableAssignment": true,
   "requireLineFeedAtFileEnd": true,
   "requireOperatorBeforeLineBreak": true,
