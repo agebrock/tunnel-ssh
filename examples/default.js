@@ -18,7 +18,6 @@ var config = {
 
 var fakeServer = helper.createServer(config.dstPort, '127.0.0.1', function() {
 
-
   tunnel(config, function() {
     console.log('Tunnel open');
     helper.createClient(7000, '127.0.0.1', console.log);
@@ -27,6 +26,6 @@ var fakeServer = helper.createServer(config.dstPort, '127.0.0.1', function() {
     console.log('error', e);
   });
 
-
 });
+
 fakeServer.unref();

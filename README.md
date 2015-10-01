@@ -1,39 +1,39 @@
 Tunnel-SSH
 ==========
 
+![Tunnel-SSH Logo](http://i.imgur.com/I5PRnDD.jpg)
 
-## Examples ##
+Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
+Trouble ? Please study the ssh2 configuration. 
 
-Tunnel-ssh is based on the fantastic 
-[ssh2](https://github.com/mscdex/ssh2) library by Brian White.
-Tunnel-ssh should do it's job out of the box, but if you ran into any trouble 
-connecting to your server. Please study the ssh2 configuration. 
-
-Thx to mrfelton we improved the keepAlive option.
-You can use the option to keep the tunnel open.
-To shutdown the tunnel in keepAlive mode you need to call 
-the "close" Method. Feel free to check the new examples for further information.
+v2.0.0 Released !
+We're happy to introduce "reverse Tunnel" 
 
 
+## Howto
+
+Pro tip: 
+If you plan to expose a local port on a remote machine you need to
+enable the "GatewayPorts" option in your 'sshd_config'
+
+```sh
+# What ports, IPs and protocols we listen for
+Port 22
+GatewayPorts yes
+```
 
 
-Minimal:
+####map remote port to localhost:
 ```js
     var tunnel = require('tunnel-ssh');
-    //map destination Port 3306 to localhost 3306
-    var config = {
-        host: '172.16.0.8',
-        dstPort: 3306
-    };
-    
-    var server = tunnel(config, function (error, result) {
+    //map port from remote 3306 to localhost 3306
+    var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, result) {
         //you can start using your resources here. (mongodb, mysql, ....)
         console.log('connected');
     });
 ```
 
-Map local port to 3000
-
+####remap remote port to localhost
 ```js
     // add a localPort for more more control
     var config = {
@@ -48,6 +48,11 @@ Map local port to 3000
     });
 ```
 
+You can find more examples here 
+
+
+
+tunnel-ssh supports the default ssh2 configuration.
 ```js
 // Or use a full blown ssh2 config, to fit your needs..
 {
