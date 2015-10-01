@@ -1,6 +1,8 @@
 Tunnel-SSH
 ==========
 
+One to connect them all !
+
 ![Tunnel-SSH Logo](http://i.imgur.com/I5PRnDD.jpg)
 
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
@@ -11,17 +13,6 @@ We're happy to introduce "reverse Tunnel"
 
 
 ## Howto
-
-Pro tip: 
-If you plan to expose a local port on a remote machine you need to
-enable the "GatewayPorts" option in your 'sshd_config'
-
-```sh
-# What ports, IPs and protocols we listen for
-Port 22
-GatewayPorts yes
-```
-
 
 ####map remote port to localhost:
 ```js
@@ -47,6 +38,37 @@ GatewayPorts yes
         console.log('connected');
     });
 ```
+
+
+####Reverse tunnel
+
+The reverse tunnel can be used to bypass network restictions, 
+or to listen to webhocks on your local machine.
+
+```js
+tunnel.reverse({
+  username: 'root',
+  dstHost: '127.0.0.1',
+  dstPort: 3000,
+  localPort: 8000,
+  host: 'remote.machine.io'
+}, function() {
+  console.log(arguments);
+});
+```
+
+Pro tip: 
+If you plan to expose a local port on a remote machine (external interface) you need to
+enable the "GatewayPorts" option in your 'sshd_config'
+
+```sh
+# What ports, IPs and protocols we listen for
+Port 22
+GatewayPorts yes
+```
+
+
+
 
 You can find more examples here 
 
