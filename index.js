@@ -1,86 +1,82 @@
 var net = require('net');
-var _ = require('lodash');
+var debug = require('debug')('tunnel-ssh');
 var Connection = require('ssh2');
+var createConfig = require('./lib/config');
 
-function createConfig(userConfig) {
-    var env = process.env;
+function bindSSHConnection(config, netConnection) {
+  var sshConnection = new Connection();
 
-    var config = _.defaults(userConfig || {}, {
-        username: env.TUNNELSSH_USER || env.USER || env.USERNAME,
-        sshPort: 22,
-        srcPort: 0,
-        srcHost: 'localhost',
-        dstPort: null,
-        dstHost: 'localhost',
-        localHost: 'localhost'
+  sshConnection.on('ready', function() {
+    debug('sshConnection:ready');
+    netConnection.emit('sshConnection', sshConnection, netConnection);
 
+    sshConnection.forwardOut(
+    config.srcHost,
+    config.srcPort,
+    config.dstHost,
+    config.dstPort, function(err, sshStream) {
+      if (err) {
+        if (!config.keepAlive) {
+          server.close();
+        }
+        // Bubble up the error => netConnection => server
+        netConnection.emit('error', err);
+        debug('Destination port:', err);
+        return;
+      }
+      sshStream.once('close', function() {
+        debug('sshStream:close');
+        if (config.keepAlive) {
+          sshConnection.end();
+        }
+      });
+      debug('sshStream:create');
+      netConnection.pipe(sshStream).pipe(netConnection);
+      netConnection.emit('sshStream', sshStream);
     });
-    if (!config.password && !config.privateKey) {
-        config.agent = config.agent || process.env.SSH_AUTH_SOCK;
-    }
-
-    if (!config.dstPort || !config.dstHost || !config.host) {
-        throw new Error('invalid configuration.')
-    }
-
-    if (config.localPort === undefined) {
-        config.localPort = config.dstPort;
-    }
-
-    return config;
+  });
+  return sshConnection;
 }
 
-function bindSSHConnection(config, server, netConnection) {
+function createServer(config) {
+  var server,
+  sshConnection,
+  connections = [];
 
-    var sshConnection = new Connection();
-    server.emit('sshConnectionCreated');
-
-    sshConnection.on('ready', function() {
-        server.emit('sshConnection', sshConnection, netConnection, server);
-
-        sshConnection.forwardOut(
-            config.srcHost,
-            config.srcPort,
-            config.dstHost,
-            config.dstPort, function(err, sshStream) {
-                if (err) {
-                    server.emit('error', err);
-                    return;
-                }
-                sshStream.once('close', function() {
-                    if (!config.keepAlive) {
-                        sshConnection.end();
-                        netConnection.end();
-                        server.close();
-                    }
-                });
-                server.emit('sshStream', sshStream, sshConnection, netConnection, server);
-                netConnection.pipe(sshStream).pipe(netConnection);
-            });
+  server = net.createServer(function(netConnection) {
+    netConnection.on('error', server.emit.bind(server, 'error'));
+    server.emit('netConnection', netConnection, server);
+    sshConnection = bindSSHConnection(config, netConnection);
+    netConnection.on('sshStream', function(sshStream) {
+      sshStream.once('close', function() {
+        debug('sshStream:close');
+        if (!config.keepAlive) {
+          server.close();
+        }
+      });
     });
-    return sshConnection;
-}
+    connections.push(sshConnection, netConnection);
+    sshConnection.connect(config);
+  });
 
-function createListener(server) {
-    server._conns = [];
-    server.on('sshConnection', function(sshConnection, netConnection, server) {
-        server._conns.push(sshConnection, netConnection);
+  server.on('close', function() {
+    connections.forEach(function(connection) {
+      connection.end();
     });
-    server.on('close', function() {
-        server._conns.forEach(function(connection) {
-            connection.end();
-        });
-    });
-    return server;
+  });
+
+  return server;
 }
 
 function tunnel(configArgs, callback) {
-    var config = createConfig(configArgs);
-    var server = net.createServer(function(netConnection) {
-        server.emit('netConnection', netConnection, server);
-        bindSSHConnection(config, server, netConnection).connect(config);
-    });
-    return createListener(server).listen(config.localPort, config.localHost, callback);
-}
 
+  try {
+    var config = createConfig(configArgs);
+  } catch (e) {
+    callback(null, e);
+  }
+
+  return createServer(config).listen(config.localPort, config.localHost, callback);
+}
+tunnel.reverse = require('./lib/reverse');
 module.exports = tunnel;
