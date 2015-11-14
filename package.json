@@ -1,6 +1,6 @@
 {
   "name": "tunnel-ssh",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "scripts": {},
@@ -26,7 +26,7 @@
     "ssh2": "^0.4.8"
   },
   "devDependencies": {
-    "chai": "3.3.0",
+    "chai": "3.4.1",
     "mocha": "2.3.3"
   }
 }

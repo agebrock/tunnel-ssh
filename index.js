@@ -6,61 +6,61 @@ var createConfig = require('./lib/config');
 function bindSSHConnection(config, netConnection) {
   var sshConnection = new Connection();
 
-  sshConnection.on('ready', function() {
+  sshConnection.on('ready', function () {
     debug('sshConnection:ready');
     netConnection.emit('sshConnection', sshConnection, netConnection);
 
     sshConnection.forwardOut(
-    config.srcHost,
-    config.srcPort,
-    config.dstHost,
-    config.dstPort, function(err, sshStream) {
-      if (err) {
-        if (!config.keepAlive) {
-          server.close();
+      config.srcHost,
+      config.srcPort,
+      config.dstHost,
+      config.dstPort, function (err, sshStream) {
+        if (err) {
+          // Bubble up the error => netConnection => server
+          netConnection.emit('error', err);
+          debug('Destination port:', err);
+          return;
         }
-        // Bubble up the error => netConnection => server
-        netConnection.emit('error', err);
-        debug('Destination port:', err);
-        return;
-      }
-      sshStream.once('close', function() {
-        debug('sshStream:close');
-        if (config.keepAlive) {
-          sshConnection.end();
-        }
+        sshStream.once('close', function () {
+          debug('sshStream:close');
+          if (config.keepAlive) {
+            sshConnection.end();
+          }
+        });
+        debug('sshStream:create');
+        netConnection.pipe(sshStream).pipe(netConnection);
+        netConnection.emit('sshStream', sshStream);
       });
-      debug('sshStream:create');
-      netConnection.pipe(sshStream).pipe(netConnection);
-      netConnection.emit('sshStream', sshStream);
-    });
   });
   return sshConnection;
 }
 
 function createServer(config) {
   var server,
-  sshConnection,
-  connections = [];
+    sshConnection,
+    connections = [];
 
-  server = net.createServer(function(netConnection) {
+  server = net.createServer(function (netConnection) {
     netConnection.on('error', server.emit.bind(server, 'error'));
     server.emit('netConnection', netConnection, server);
     sshConnection = bindSSHConnection(config, netConnection);
-    netConnection.on('sshStream', function(sshStream) {
-      sshStream.once('close', function() {
+    netConnection.on('sshStream', function (sshStream) {
+      sshStream.once('close', function () {
         debug('sshStream:close');
         if (!config.keepAlive) {
           server.close();
         }
+      });
+      sshStream.on('error', function () {
+        server.close();
       });
     });
     connections.push(sshConnection, netConnection);
     sshConnection.connect(config);
   });
 
-  server.on('close', function() {
-    connections.forEach(function(connection) {
+  server.on('close', function () {
+    connections.forEach(function (connection) {
       connection.end();
     });
   });
@@ -73,7 +73,12 @@ function tunnel(configArgs, callback) {
   try {
     var config = createConfig(configArgs);
   } catch (e) {
-    callback(null, e);
+    if (callback) {
+      callback(null, e);
+    } else {
+      throw (e);
+    }
+    return;
   }
 
   return createServer(config).listen(config.localPort, config.localHost, callback);
