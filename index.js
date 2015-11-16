@@ -1,87 +1,69 @@
 var net = require('net');
 var debug = require('debug')('tunnel-ssh');
-var Connection = require('ssh2');
-var createConfig = require('./lib/config');
+var Connection = require('ssh2').Client;
+var config = require('./lib/config');
+var Promise = require('bluebird');
 
-function bindSSHConnection(config, netConnection) {
+function createConnection(callback) {
   var sshConnection = new Connection();
 
-  sshConnection.on('ready', function () {
-    debug('sshConnection:ready');
-    netConnection.emit('sshConnection', sshConnection, netConnection);
+  sshConnection.connectionCount = 0;
 
-    sshConnection.forwardOut(
-      config.srcHost,
-      config.srcPort,
-      config.dstHost,
-      config.dstPort, function (err, sshStream) {
-        if (err) {
-          // Bubble up the error => netConnection => server
-          netConnection.emit('error', err);
-          debug('Destination port:', err);
-          return;
-        }
-        sshStream.once('close', function () {
-          debug('sshStream:close');
-          if (config.keepAlive) {
-            sshConnection.end();
-          }
-        });
-        debug('sshStream:create');
-        netConnection.pipe(sshStream).pipe(netConnection);
-        netConnection.emit('sshStream', sshStream);
-      });
+  sshConnection.promise = new Promise(function(resolve, reject) {
+    sshConnection.once('ready', resolve.bind(null, sshConnection));
+    sshConnection.once('error', reject);
+    return sshConnection;
   });
+
+  if (callback) {
+    sshConnection.once('ready', callback.bind(null, sshConnection));
+  }
+
+  sshConnection.out = function(config) {
+    return sshConnection.promise.then(forwardOut(config, sshConnection));
+  };
+
   return sshConnection;
 }
 
-function createServer(config) {
-  var server,
-    sshConnection,
-    connections = [];
+function forwardOut(config, sshConnection) {
+  return function() {
+    return Promise.fromCallback(function(callback) {
+      sshConnection.forwardOut(config.srcHost, config.srcPort, config.dstHost, config.dstPort, callback);
+    });
+  };
+}
 
-  server = net.createServer(function (netConnection) {
-    netConnection.on('error', server.emit.bind(server, 'error'));
-    server.emit('netConnection', netConnection, server);
-    sshConnection = bindSSHConnection(config, netConnection);
-    netConnection.on('sshStream', function (sshStream) {
-      sshStream.once('close', function () {
-        debug('sshStream:close');
-        if (!config.keepAlive) {
-          server.close();
+function createServer(userConfig) {
+  var settings = config(userConfig);
+  var connection = createConnection();
+
+  var server = net.createServer(function(ioStream) {
+    connection.out(settings).then(function(stream) {
+      connection.connectionCount++;
+
+      ioStream.pipe(stream).pipe(ioStream).on('end', function() {
+        connection.connectionCount--;
+        if (connection.connectionCount === 0 && !settings.keepAlive) {
+          connection.end();
         }
       });
-      sshStream.on('error', function () {
-        server.close();
-      });
-    });
-    connections.push(sshConnection, netConnection);
-    sshConnection.connect(config);
-  });
-
-  server.on('close', function () {
-    connections.forEach(function (connection) {
-      connection.end();
     });
   });
 
+  connection.on('end', server.close.bind(server));
+  server.on('close', connection.end.bind(connection));
+
+  server.promise = Promise.fromCallback(function(callback) {
+    server.listen(settings.srcPort, settings.srcHost, callback);
+  });
+
+  connection.connect(settings);
   return server;
 }
 
-function tunnel(configArgs, callback) {
-
-  try {
-    var config = createConfig(configArgs);
-  } catch (e) {
-    if (callback) {
-      callback(null, e);
-    } else {
-      throw (e);
-    }
-    return;
-  }
-
-  return createServer(config).listen(config.localPort, config.localHost, callback);
+exports.createServer = createServer;
+exports.createConnection = createConnection;
+exports.patchNet = function() {
+  require('./lib/net');
 }
-tunnel.reverse = require('./lib/reverse');
-module.exports = tunnel;

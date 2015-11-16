@@ -1,0 +1,12 @@
+[stage]
+  host=www.addyoursshHost.here
+  port=27017
+
+[production]
+  host=www.finanzchef24.de
+  port=27017
+
+[bigmac]
+  host=bigmac
+  port=27017
+  username=age
