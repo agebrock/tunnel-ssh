@@ -1,13 +1,7 @@
-var tunnel = require('../');
+var tunnel = require('../').tunnel;
 
-var server = tunnel({
-  remoteHost: '127.0.0.1',
-  remotePort: 3306,
-  localPort: 33333,
-  verbose: true,
-  sshConfig: {
-    host: 'REMOTE-IP',
-    username: 'USER',
-    port: 22
-  }
+tunnel({}).catch(console.log);
+
+tunnel({}, function(error, tunnel) {
+  console.log(arguments);
 });

@@ -1,14 +1,21 @@
 require('../').patchNet();
 
 var mongojs = require('mongojs');
+var i = 10;
 
-var db = mongojs('www.finanzchef24.de/fc24');
+function run() {
+  var db = mongojs('tunneltest.com/fc24');
 
-db.collection('forms').findOne({}, function(){
-  console.log(arguments);
-  db.close();
-});
-
-
-
+  console.time('mongo');
+  db.collection('forms').findOne({}, function(e, r) {
+    console.timeEnd('mongo');
+    db.close();
+    i--;
+    if (i > 0) {
+      console.log('RUN');
+      run();
+    }
+  });
+}
+run();
 

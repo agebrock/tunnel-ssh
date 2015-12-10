@@ -1,9 +1,11 @@
 {
   "name": "tunnel-ssh",
-  "version": "3.0.0",
+  "version": "3.0.0-alpha",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+   "test":"./node_modules/mocha/bin/mocha"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Finanzchef24-GmbH/tunnel-ssh"
@@ -29,6 +31,8 @@
   },
   "devDependencies": {
     "chai": "3.4.1",
-    "mocha": "2.3.4"
+    "chai-as-promised": "5.1.0",
+    "mocha": "2.3.4",
+    "proxyquire": "1.7.3"
   }
 }

@@ -1,0 +1,12 @@
+{
+  "tunneltest.com:27017": {
+    "username": "root"
+  },
+   "doesnotexist:3000": {
+    "dstPort": "27017",
+    "dstHost":"localhost"
+  }
+}
+
+
+

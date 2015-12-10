@@ -4,19 +4,26 @@
  * Try to connect to your mongo via shell:
  * mongo --host 127.0.0.1:5000
  *
- * tunnel will close if the connection ends, to behave in the
- * same way the script would without any tunnel.
+ * option.keepAlive
+ * will keep the tunnel open until closed via "tunnel.close()"
+ *
  */
+
 var helper = require('./server');
 var tunnel = require('../').tunnel;
 var config = {
   dstPort: 6000,
-  srcPort: 5000
+  srcPort: 5000,
+  keepAlive: true
 };
 
 helper.createServer(config.dstPort, '127.0.0.1', function() {
   tunnel(config).then(function(t) {
-    console.log(t.config);
     helper.request(5000, '127.0.0.1', 'hallo tunnel');
+    console.log('close tunnel after 2 sec');
+    setTimeout(function() {
+      console.log('close now');
+      t.close();
+    }, 2000);
   });
 });

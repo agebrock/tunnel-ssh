@@ -7,16 +7,17 @@
  * tunnel will close if the connection ends, to behave in the
  * same way the script would without any tunnel.
  */
-var helper = require('./server');
+
 var tunnel = require('../').tunnel;
 var config = {
-  dstPort: 6000,
-  srcPort: 5000
+  dstPort: 6000, // Port is not open !.
+  srcPort: 5000,
+  keepAlive: true
 };
 
-helper.createServer(config.dstPort, '127.0.0.1', function() {
-  tunnel(config).then(function(t) {
-    console.log(t.config);
-    helper.request(5000, '127.0.0.1', 'hallo tunnel');
-  });
+tunnel(config).then(function(t) {
+  t.on('error', console.log);
+  console.log(t.config);
+}).catch(function(e) {
+  console.log('ERROR:', e);
 });

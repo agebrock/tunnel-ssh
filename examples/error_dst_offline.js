@@ -1,4 +1,4 @@
-var tunnel = require('../');
+var tunnel = require('../').tunnel;
 var net = require('net');
 var debug = require('debug')('tunnel-ssh:test');
 var helper = require('./server');
@@ -9,31 +9,25 @@ var helper = require('./server');
 // note the "tunnelKeepAlive.close();" at the end.
 // this step is required to finish execution nicely
 
-
 var configA = {
   host: '127.0.0.1',
   username: process.env.USER,
   dstPort: 8000,
-  localPort: 7000,
-  // Use keepAlive:true to keep the tunnel open.
-  keepAlive: true
+  srcPort: 7000
 };
-var tunnelKeepAlive = tunnel(configA, function() {
-  console.log('Tunnel open');
-  helper.createClient(7000, '127.0.0.1', console.log);
-  helper.createClient(7000, '127.0.0.1', console.log);
+
+var x = tunnel(configA);
+x.then(function(tunnel) {
+  console.log('try 1');
   helper.createClient(7000, '127.0.0.1', console.log).on('close', function() {
+    console.log('try 2');
     helper.createClient(7000, '127.0.0.1', console.log).on('close', function() {
+      console.log('try 3');
       helper.createClient(7000, '127.0.0.1', console.log).on('close', function() {
-        setTimeout(function() {
-          // Call tunnel.close() to shutdown the server.
-          console.log('TRYING TO CLOSE');
-          tunnelKeepAlive.close();
-        }, 2000);
+        console.log('shutdown');
       });
     });
   });
-}).on('error', function(e) {
-  console.log('error', e);
-});
-
+}).catch(function(e) {
+  x.close();
+})
