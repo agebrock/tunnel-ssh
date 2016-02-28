@@ -8,8 +8,20 @@ One to connect them all !
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
 Trouble ? Please study the ssh2 configuration. 
 
-v2.0.0 Released !
-We're happy to introduce "reverse Tunnel" 
+v2.1.1 Released !
+* Server now throws client exceptions see Example below Thx @joshbalfour
+* Improved reverse proxy and example 
+
+
+##So what about next major version ?
+With version 3 we will introduce a new feature to enable the developer to use  
+tunnel-ssh without wrapping your code, a feature i was asked very often for.
+We think we have found a very good solution for that, and we already testing 
+the beta in production. 
+We want to make next release to be as stable as v2 but way more powerful and 
+easy to use. Until then we support both versions.
+
+Keep digging !
 
 
 ## Howto
@@ -55,19 +67,41 @@ We're happy to introduce "reverse Tunnel"
 
 ####Reverse tunnel
 
-The reverse tunnel can be used to bypass network restictions, 
-or to listen to webhocks on your local machine.
+The reverse tunnel can be used to bypass network restrictions, 
+or to listen to web-hocks on your local machine.
 
 ```js
+var tunnel = require('../');
+
+
+// This is a very handy way to test your next web-hook !
+
+
+// Please set up your /etc/hosts or change the hostname before
+// running the example.
+
+
+// The name "local" is currently misleading since you can put
+// remove ports as well...
+var dstPort = 8000;
+var host = 'tunneltest.com';
+
 tunnel.reverse({
+  host: host,
   username: 'root',
-  dstHost: '127.0.0.1',
-  dstPort: 3000,
-  localPort: 8000,
-  host: 'remote.machine.io'
-}, function() {
-  console.log(arguments);
+  dstHost: '0.0.0.0', // bind to all interfaces (see hint in the readme)
+  dstPort: dstPort,
+  //localHost: '127.0.0.1', // default
+  //localPort: localPort
+}, function(error, clientConnection) {
+  console.log(clientConnection._forwarding);
 });
+
+require('http').createServer(function(res, res){
+  res.end('SSH-TUNNEL: Gate to heaven !');
+}).listen(localPort);
+
+console.log('Tunnel created: http://'+host+':'+localPort);
 ```
 
 Pro tip: 
@@ -79,11 +113,6 @@ enable the "GatewayPorts" option in your 'sshd_config'
 Port 22
 GatewayPorts yes
 ```
-
-
-
-
-You can find more examples here 
 
 
 
