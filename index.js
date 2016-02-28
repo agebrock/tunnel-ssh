@@ -44,6 +44,7 @@ function createServer(config) {
     netConnection.on('error', server.emit.bind(server, 'error'));
     server.emit('netConnection', netConnection, server);
     sshConnection = bindSSHConnection(config, netConnection);
+    sshConnection.on('error', server.emit.bind(server, 'error'));
     netConnection.on('sshStream', function (sshStream) {
       sshStream.once('close', function () {
         debug('sshStream:close');

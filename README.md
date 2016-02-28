@@ -39,6 +39,19 @@ We're happy to introduce "reverse Tunnel"
     });
 ```
 
+####catch SSH errors that occur outside of setup:
+```js
+    var tunnel = require('tunnel-ssh');
+    //map port from remote 3306 to localhost 3306
+    var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, result) {
+        //you can start using your resources here. (mongodb, mysql, ....)
+        console.log('connected');
+    });
+    
+    server.on('error', function(err){
+        console.error('Something bad happened:', err);
+    });
+```
 
 ####Reverse tunnel
 
