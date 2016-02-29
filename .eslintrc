@@ -345,7 +345,7 @@
       2,
       {
         "SwitchCase": 1,
-        "VariableDeclarator":2
+        "VariableDeclarator": 2
       }
     ],
     "brace-style": [

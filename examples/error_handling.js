@@ -16,7 +16,9 @@ var config = {
 };
 
 tunnel(config).then(function(t) {
-  t.on('error', console.log);
+  t.on('error', function(e) {
+    console.log('EMITTED', e.message);
+  });
   console.log(t.config);
 }).catch(function(e) {
   console.log('ERROR:', e);

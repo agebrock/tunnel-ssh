@@ -1,57 +1,29 @@
-var debug = require('debug')('tunnel.index');
 var Promise = require('bluebird');
-
 var config = require('./lib/config');
+var createTunnel = Promise.promisify(require('./lib/tunnel').createTunnel);
 
-var createTunnel = require('./lib/tunnel').createTunnel;
 
-createTunnel = Promise.promisify(createTunnel);
+var tunnel = function(rawConfig, callback) {
 
-exports.tunnel = function(rawConfig, callback) {
-  var userConfig = config.prepare(rawConfig);
-  var tunnel = createTunnel(userConfig);
-
-  tunnel.then(function(tunnel) {
-    tunnel.config = userConfig;
-
-    if (callback) {
-      callback(null, tunnel);
-    }
-
-    return tunnel;
-  }).catch(function(e) {
-    if (callback) {
-      callback(e);
-    } else {
-      throw e;
-    }
-  });
-  return tunnel;
-};
-exports.tunnelAsync = function(rawConfig, callback) {
-  return config.init(rawConfig).then(function(userConfig) {
-    var tunnel = createTunnel(userConfig).then(function(tunnel) {
-      tunnel.config = userConfig;
-
+  return config
+    .init(rawConfig)
+    .then(createTunnel)
+    .then(function(server) {
       if (callback) {
-        callback(null, tunnel);
+        server
+          .on('error', callback)
+          .on('ready', callback.bind(null, null));
       }
-
-      return tunnel;
-    }).catch(function(e) {
-      if (callback) {
-        callback(e);
-      } else {
-        throw e;
-      }
+      return server;
     });
-    return tunnel;
-  });
 };
 
-exports.reverseTunnel = require('./lib/reverse').createTunnel;
-exports.patchNet = function(cfg) {
+
+var setup = function(cfg) {
   var userConfig = config.load(cfg);
 
-  require('./lib/net')(userConfig);
+  return require('./lib/net')(tunnel, userConfig);
 };
+
+exports.tunnel = tunnel;
+exports.setup = setup;

@@ -1,7 +1,5 @@
 var tunnel = require('../').tunnel;
 
-tunnel({}).catch(console.log);
-
-tunnel({}, function(error, tunnel) {
-  console.log(arguments);
+tunnel({}).catch(function(e) {
+  console.log('catched error', e);
 });

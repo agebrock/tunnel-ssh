@@ -1,10 +1,10 @@
 {
   "name": "tunnel-ssh",
-  "version": "3.0.0-alpha",
+  "version": "3.1.0-alpha",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "scripts": {
-   "test":"./node_modules/mocha/bin/mocha"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -23,16 +23,16 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "3.0.5",
+    "bluebird": "3.3.3",
     "debug": "2.2.0",
-    "lodash": "^3.5.0",
-    "rc": "1.1.5",
+    "lodash": "4.5.1",
+    "rc": "1.1.6",
     "ssh2": "^0.4.8"
   },
   "devDependencies": {
-    "chai": "3.4.1",
-    "chai-as-promised": "5.1.0",
-    "mocha": "2.3.4",
-    "proxyquire": "1.7.3"
+    "chai": "3.5.0",
+    "chai-as-promised": "5.2.0",
+    "mocha": "2.4.5",
+    "proxyquire": "1.7.4"
   }
 }

@@ -14,8 +14,13 @@ var config = {
   dstPort: 8000,
   srcPort: 5000
 };
+
+var state = {
+  server: null
+}
 var server;
 var tunnel;
+
 
 describe('localhost', function() {
   var i = 1;
@@ -30,18 +35,23 @@ describe('localhost', function() {
   });
 
   afterEach(function(done) {
-    if (server) {
-      server.close(function() {
+    if (state.tunnel) {
+      state.tunnel.close();
+      delete state.tunnel;
+    }
+
+    if (state.server) {
+      state.server.close(function() {
         done();
       });
+      delete state.server;
     } else {
-      setImmediate(done)
+      setImmediate(done);
     }
-    //tunnel.close();
   });
 
   it('map local port 5000 => 8000', function(done) {
-    server = helper.createServer(config.dstPort, '127.0.0.1', function() {
+    state.server = helper.createServer(config.dstPort, '127.0.0.1', function() {
 
       return createTunnel(config).then(function(tunnel) {
         tunnel.once('close', done);
@@ -52,7 +62,7 @@ describe('localhost', function() {
 
   it('should autoclose after timeout', function(done) {
 
-    server = helper.createServer(config.dstPort, '127.0.0.1', function() {
+    state.server = helper.createServer(config.dstPort, '127.0.0.1', function() {
       debug('server created', config);
       return createTunnel(config).then(function(tunnel) {
         debug('tunnel open');
@@ -74,7 +84,7 @@ describe('localhost', function() {
 
   it('(keepAlive=true),  should NOT autoclose', function(done) {
     config.keepAlive = true;
-    server = helper.createServer(config.dstPort, '127.0.0.1', function() {
+    state.server = helper.createServer(config.dstPort, '127.0.0.1', function() {
       debug('server on');
       return createTunnel(config).then(function(tunnel) {
         helper.request(config.srcPort, '127.0.0.1', 'first')
@@ -96,8 +106,7 @@ describe('localhost', function() {
             helper.request(config.srcPort, '127.0.0.1', 'first2')
           ]);
         }).then(function() {
-
-          tunnel.close();
+          state.tunnel = tunnel;
           done();
         });
 
@@ -107,7 +116,7 @@ describe('localhost', function() {
 
   it('(set timeout),  should wait a little before autoclose', function(done) {
     config.timeout = 20;
-    server = helper.createServer(config.dstPort, '127.0.0.1', function() {
+    state.server = helper.createServer(config.dstPort, '127.0.0.1', function() {
       createTunnel(config).then(function(tunnel) {
         tunnel.once('close', done);
         helper.request(config.srcPort, '127.0.0.1', 'first').then(function() {
@@ -122,18 +131,15 @@ describe('localhost', function() {
 
   it('should close the tunnel', function(done) {
     config.keepAlive = true;
-    server = helper.createServer(config.dstPort, '127.0.0.1', function() {
+    state.server = helper.createServer(config.dstPort, '127.0.0.1', function() {
       createTunnel(config).then(function(tunnel) {
-        tunnel.once('close', done);
         return helper.request(config.srcPort, '127.0.0.1', 'first').then(function() {
           tunnel.close();
-          return expect(helper.request(config.srcPort, '127.0.0.1', 'second')).to.eventually.be.rejected;
-
+          return expect(helper.request(config.srcPort, '127.0.0.1', 'second')).to.eventually.be.rejected.notify(done)
         });
       });
     });
   });
-
 
 
 });
