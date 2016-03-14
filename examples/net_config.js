@@ -1,5 +1,5 @@
 require('../').setup({
-  'foo:27017': {
+  'localhost:27017': {
     host: 'tunneltest.com',
     dstPort: 27017,
     username: 'root'
@@ -11,7 +11,7 @@ var i = 20;
 
 function run() {
 
-  var db = mongojs('foo/fc24');
+  var db = mongojs('fc24');
   console.time('mongo');
   db.collection('forms').findOne({}, function() {
     console.timeEnd('mongo');

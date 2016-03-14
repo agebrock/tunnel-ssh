@@ -7,7 +7,7 @@ require('../').setup({
 });
 
 var mongojs = require('mongojs');
-var i = 2;
+var i = 200;
 var db = mongojs('fc24');
 
 function run() {
