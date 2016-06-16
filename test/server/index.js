@@ -17,7 +17,7 @@ function createClient(port, addr, callback) {
   var client = new net.Socket();
 
   client.on('error', function(e){
-    console.log('errortest', e);
+    debug('clientError', e);
   });
 
   client.connect(port, addr, function() {

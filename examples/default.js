@@ -1,6 +1,4 @@
 var tunnel = require('../');
-var net = require('net');
-var debug = require('debug')('tunnel-ssh:test');
 var helper = require('./server');
 
 // Keep alive example

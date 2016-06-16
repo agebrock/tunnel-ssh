@@ -1,6 +1,6 @@
 {
   "name": "tunnel-ssh",
-  "version": "2.1.1",
+  "version": "4.0.0",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "scripts": {},
@@ -22,11 +22,11 @@
   "license": "MIT",
   "dependencies": {
     "debug": "2.2.0",
-    "lodash": "4.5.1",
-    "ssh2": "^0.4.8"
+    "lodash.defaults": "4.0.1",
+    "ssh2": "0.5.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
-    "mocha": "2.4.5"
+    "mocha": "2.5.3"
   }
 }

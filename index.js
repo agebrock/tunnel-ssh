@@ -2,8 +2,9 @@ var net = require('net');
 var debug = require('debug')('tunnel-ssh');
 var Connection = require('ssh2');
 var createConfig = require('./lib/config');
-var reverse = require('./lib/reverse');
-
+var events = require('events');
+var noop = function() {
+};
 
 function bindSSHConnection(config, netConnection) {
   var sshConnection = new Connection();
@@ -39,8 +40,8 @@ function bindSSHConnection(config, netConnection) {
 
 function createServer(config) {
   var server,
-    sshConnection,
-    connections = [];
+      sshConnection,
+      connections = [];
 
   server = net.createServer(function(netConnection) {
     netConnection.on('error', server.emit.bind(server, 'error'));
@@ -59,6 +60,7 @@ function createServer(config) {
       });
     });
     connections.push(sshConnection, netConnection);
+    debug('sshConfig', config);
     sshConnection.connect(config);
   });
 
@@ -72,22 +74,25 @@ function createServer(config) {
 }
 
 function tunnel(configArgs, callback) {
+  var server, config;
 
-  try {
-    var config = createConfig(configArgs);
-  } catch ( e ) {
-    if (callback) {
-      callback(null, e);
-    } else {
-      throw (e);
-    }
-    return;
+  if (!callback) {
+    callback = noop;
   }
+  try {
+    config = createConfig(configArgs);
 
-  return createServer(config).listen(config.localPort, config.localHost, callback);
+    server = createServer(config).listen(config.localPort, config.localHost, function(error) {
+      callback(error, server);
+    });
+  } catch (e) {
+    server = new events.EventEmitter();
+    setImmediate(function() {
+      callback(e);
+      server.emit('error', e);
+    });
+  }
+  return server;
 }
 
-tunnel.reverse = function(userConfig, callback) {
-  return reverse(createConfig(userConfig), callback);
-};
 module.exports = tunnel;
