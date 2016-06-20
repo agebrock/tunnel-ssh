@@ -28,7 +28,7 @@ Keep digging !
 
 ####map remote port to localhost:
 ```js
-    var tunnel = require('tunnel-ssh');
+    var tunnel = require('tunnel-ssh').tunnel;
     //map port from remote 3306 to localhost 3306
     var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, result) {
         //you can start using your resources here. (mongodb, mysql, ....)
@@ -53,7 +53,7 @@ Keep digging !
 
 ####catch SSH errors that occur outside of setup:
 ```js
-    var tunnel = require('tunnel-ssh');
+    var tunnel = require('tunnel-ssh').tunnel;
     //map port from remote 3306 to localhost 3306
     var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, result) {
         //you can start using your resources here. (mongodb, mysql, ....)
@@ -71,7 +71,7 @@ The reverse tunnel can be used to bypass network restrictions,
 or to listen to web-hocks on your local machine.
 
 ```js
-var tunnel = require('../');
+var tunnel = require('../').tunnel;
 
 
 // This is a very handy way to test your next web-hook !
@@ -129,7 +129,8 @@ tunnel-ssh supports the default ssh2 configuration.
     localHost: 'localhost'
     agent : process.env.SSH_AUTH_SOCK,
     privateKey:require('fs').readFileSync('/here/is/my/key'),
-    password:'secret'
+    password:'secret',
+    passphrase: 'passphrase'
 } 
 
 ```
