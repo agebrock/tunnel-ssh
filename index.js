@@ -12,7 +12,6 @@ function bindSSHConnection(config, netConnection) {
   sshConnection.on('ready', function() {
     debug('sshConnection:ready');
     netConnection.emit('sshConnection', sshConnection, netConnection);
-
     sshConnection.forwardOut(
       config.srcHost,
       config.srcPort,
@@ -24,15 +23,10 @@ function bindSSHConnection(config, netConnection) {
           debug('Destination port:', err);
           return;
         }
-        sshStream.once('close', function() {
-          debug('sshStream:close');
-          if (config.keepAlive) {
-            sshConnection.end();
-          }
-        });
+
         debug('sshStream:create');
-        netConnection.pipe(sshStream).pipe(netConnection);
         netConnection.emit('sshStream', sshStream);
+        netConnection.pipe(sshStream).pipe(netConnection);
       });
   });
   return sshConnection;
@@ -40,25 +34,37 @@ function bindSSHConnection(config, netConnection) {
 
 function createServer(config) {
   var server,
-      sshConnection,
-      connections = [];
+    sshConnection,
+    connections = [],
+    connectionCount = 0;
 
   server = net.createServer(function(netConnection) {
+    connectionCount++;
     netConnection.on('error', server.emit.bind(server, 'error'));
+    netConnection.on('close', function() {
+
+      connectionCount--;
+      if (connectionCount === 0) {
+        if (!config.keepAlive) {
+          setTimeout(function() {
+            if (connectionCount === 0) {
+              server.close();
+            }
+          },2);
+          };
+        }
+    });
+
     server.emit('netConnection', netConnection, server);
     sshConnection = bindSSHConnection(config, netConnection);
     sshConnection.on('error', server.emit.bind(server, 'error'));
+
     netConnection.on('sshStream', function(sshStream) {
-      sshStream.once('close', function() {
-        debug('sshStream:close');
-        if (!config.keepAlive) {
-          server.close();
-        }
-      });
       sshStream.on('error', function() {
         server.close();
       });
     });
+
     connections.push(sshConnection, netConnection);
     debug('sshConfig', config);
     sshConnection.connect(config);
@@ -81,10 +87,13 @@ function tunnel(configArgs, callback) {
   }
   try {
     config = createConfig(configArgs);
+    server = createServer(config);
 
-    server = createServer(config).listen(config.localPort, config.localHost, function(error) {
+
+    server.listen(config.localPort, config.localHost, function(error) {
       callback(error, server);
     });
+
   } catch (e) {
     server = new events.EventEmitter();
     setImmediate(function() {
