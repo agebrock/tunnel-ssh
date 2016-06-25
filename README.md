@@ -10,25 +10,72 @@ Trouble ? Please study the ssh2 configuration.
 
 v4
 API Changes:
-* API now supports node callback style.   
+* Removed Beta v3 api in favor of inject-tunnel-ssh  
 * Removed reverse proxy in favor of tunnel-ssh-reverse
+* API now supports node callback style.   
 * Improved docs
 
-##What happend to v3
-v3 had a cool feature which allowed us to create a tunnel on demand by hacking the net api.
-That feature will be released on a higher level in a different module very soon. 
 
-## Basic understanding
-tunnel-ssh requires three hosts to be setup. 
+### related projects
+* [If you don't want to wrap a tunnel around your code: inject-tunnel-ssh](https://github.com/agebrock/inject-tunnel-ssh)
+* [If you need it the other way around: reverse-tunnel-ssh](https://github.com/agebrock/reverse-tunnel-ssh)
 
-1. The host you want to connect to. (dstHost:dstPort)
-Usually the host/port is protected by vpn or firewall
+### Integration
+By default tunnel-ssh will close the tunnel after a client disconnects, so your cli tools should work in the same way, they do if you connect directly.
+If you need the tunnel to stay open, use the "keepAlive:true" option within 
+the configuration.
 
-2. The host you want to connect from. (host:port)
-This is the host you connect via ssh
 
-3. The host you run the tunnel from. (localHost:localPort)
-This is the host you connect via client
+```js
+
+    var config = {
+      ...
+      keepAlive:true
+    };
+    
+    var tnl = tunnel(config, function(error, tnl){
+          yourClient.connect();
+          yourClient.disconnect();
+          setTimeout(function(){
+            // you only need to close the tunnel by yourself if you set the 
+            // keepAlive:true option in the configuration !
+            tnl.close();
+          },2000);  
+      });
+    
+    // you can also close the tunnel from here...
+    setTimeout(function(){
+      tnl.close();
+    },2000);  
+
+```
+ 
+
+## Understanding the configuration
+
+1. A local server listening for connections to forward via ssh
+Description: This is where you bind your interface.
+Properties:
+** localHost (default is '127.0.0.1')
+** localPort (default is dstPort)
+
+
+2. The ssh configuration 
+Description: The host you want to use as ssh-tunnel server.
+Properties:
+** host
+** port (22)
+** username
+** ...
+
+
+3. The destination host configuration (based on the ssh host) 
+Imagine you just connected to The host you want to connect to. (via host:port)
+now that server connects requires a target to tunnel to. 
+Properties:
+** dstHost (localhost)
+** dstPort
+
 
 ### Config example
 
@@ -59,6 +106,7 @@ You can also skip the local configuration if you want to connect to localhost an
 the same port as "dstPort".
 
 ```js
+
     var config = {
       user:'root',
       dstHost:destinationServer,
