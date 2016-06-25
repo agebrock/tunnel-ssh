@@ -11,7 +11,6 @@
     "dist\/**",
     ".tmp\/**"
   ],
-  "esnext": true,
   "disallowEmptyBlocks": true,
   "disallowKeywordsOnNewLine": [
     "else"

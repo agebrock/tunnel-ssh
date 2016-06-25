@@ -6,130 +6,146 @@ One to connect them all !
 ![Tunnel-SSH Logo](http://i.imgur.com/I5PRnDD.jpg)
 
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
-Trouble ? Please study the ssh2 configuration. 
+Trouble ? Please study the ssh2 configuration.
 
-v2.1.1 Released !
-* Server now throws client exceptions see Example below Thx @joshbalfour
-* Improved reverse proxy and example 
-
-
-##So what about next major version ?
-With version 3 we will introduce a new feature to enable the developer to use  
-tunnel-ssh without wrapping your code, a feature i was asked very often for.
-We think we have found a very good solution for that, and we already testing 
-the beta in production. 
-We want to make next release to be as stable as v2 but way more powerful and 
-easy to use. Until then we support both versions.
-
-Keep digging !
+v4
+API Changes:
+* Removed Beta v3 api in favor of inject-tunnel-ssh  
+* Removed reverse proxy in favor of tunnel-ssh-reverse
+* API now supports node callback style.   
+* Improved docs
 
 
-## Howto
+### related projects
+* [If you don't want to wrap a tunnel around your code: inject-tunnel-ssh](https://github.com/agebrock/inject-tunnel-ssh)
+* [If you need it the other way around: reverse-tunnel-ssh](https://github.com/agebrock/reverse-tunnel-ssh)
 
-####map remote port to localhost:
+### Integration
+By default tunnel-ssh will close the tunnel after a client disconnects, so your cli tools should work in the same way, they do if you connect directly.
+If you need the tunnel to stay open, use the "keepAlive:true" option within 
+the configuration.
+
+
 ```js
-    var tunnel = require('tunnel-ssh');
-    //map port from remote 3306 to localhost 3306
-    var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, result) {
-        //you can start using your resources here. (mongodb, mysql, ....)
-        console.log('connected');
-    });
-```
 
-####remap remote port to localhost
-```js
-    // add a localPort for more more control
     var config = {
-        host: '172.16.0.8',
-        username: 'root',
-        dstPort: 3306,
-        localPort: 3000
+      ...
+      keepAlive:true
     };
     
-    var server = tunnel(config, function (error, result) {
-        console.log('connected');
+    var tnl = tunnel(config, function(error, tnl){
+          yourClient.connect();
+          yourClient.disconnect();
+          setTimeout(function(){
+            // you only need to close the tunnel by yourself if you set the 
+            // keepAlive:true option in the configuration !
+            tnl.close();
+          },2000);  
+      });
+    
+    // you can also close the tunnel from here...
+    setTimeout(function(){
+      tnl.close();
+    },2000);  
+
+```
+ 
+
+## Understanding the configuration
+
+1. A local server listening for connections to forward via ssh
+Description: This is where you bind your interface.
+Properties:
+** localHost (default is '127.0.0.1')
+** localPort (default is dstPort)
+
+
+2. The ssh configuration 
+Description: The host you want to use as ssh-tunnel server.
+Properties:
+** host
+** port (22)
+** username
+** ...
+
+
+3. The destination host configuration (based on the ssh host) 
+Imagine you just connected to The host you want to connect to. (via host:port)
+now that server connects requires a target to tunnel to. 
+Properties:
+** dstHost (localhost)
+** dstPort
+
+
+### Config example
+
+```js
+
+    var config = {
+      user:'root',
+      host:sshServer,
+      port:22,
+      dstHost:destinationServer,
+      dstPort:27017
+      localHost:'127.0.0.1'
+      localPort: 27000
+    };
+    
+    var tunnel = require('tunnel-ssh');
+    tunnel(config, function (error, server) {
+      //....
+    });
+```
+#### Sugar configuration
+
+In many cases host 1. and 2. are the same, for example if you want to connect to a database
+where the port from that database is bound to a local interface (127.0.0.1:27017)
+but you are able to connect via ssh (port 22 by default).
+You can skip the "dstHost" or the "host" configuration if they are the same.
+You can also skip the local configuration if you want to connect to localhost and 
+the same port as "dstPort".
+
+```js
+
+    var config = {
+      user:'root',
+      dstHost:destinationServer,
+      dstPort:27017
+    };
+    
+    var tunnel = require('tunnel-ssh');
+    tunnel(config, function (error, server) {
+      //....
     });
 ```
 
-####catch SSH errors that occur outside of setup:
+#### More configuration options
+tunnel-ssh pipes the configuration direct into the ssh2 library so every config option
+provided by ssh2 still works. 
+
+Common examples are:
+```js
+    
+    var config = {
+      agent : process.env.SSH_AUTH_SOCK, // enabled by default
+      privateKey:require('fs').readFileSync('/here/is/my/key'),
+      password:'secret'
+    }
+    
+```
+    
+####catch errors:
 ```js
     var tunnel = require('tunnel-ssh');
     //map port from remote 3306 to localhost 3306
-    var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, result) {
-        //you can start using your resources here. (mongodb, mysql, ....)
-        console.log('connected');
+    var server = tunnel({host: '172.16.0.8', dstPort: 3306}, function (error, server) {
+       if(error){
+        //catch configuration and startup errors here.
+       }
     });
-    
+
+    // Use a listener to handle errors outside the callback
     server.on('error', function(err){
         console.error('Something bad happened:', err);
     });
-```
-
-####Reverse tunnel
-
-The reverse tunnel can be used to bypass network restrictions, 
-or to listen to web-hocks on your local machine.
-
-```js
-var tunnel = require('../');
-
-
-// This is a very handy way to test your next web-hook !
-
-
-// Please set up your /etc/hosts or change the hostname before
-// running the example.
-
-
-// The name "local" is currently misleading since you can put
-// remove ports as well...
-var dstPort = 8000;
-var host = 'tunneltest.com';
-
-tunnel.reverse({
-  host: host,
-  username: 'root',
-  dstHost: '0.0.0.0', // bind to all interfaces (see hint in the readme)
-  dstPort: dstPort,
-  //localHost: '127.0.0.1', // default
-  //localPort: localPort
-}, function(error, clientConnection) {
-  console.log(clientConnection._forwarding);
-});
-
-require('http').createServer(function(res, res){
-  res.end('SSH-TUNNEL: Gate to heaven !');
-}).listen(localPort);
-
-console.log('Tunnel created: http://'+host+':'+localPort);
-```
-
-Pro tip: 
-If you plan to expose a local port on a remote machine (external interface) you need to
-enable the "GatewayPorts" option in your 'sshd_config'
-
-```sh
-# What ports, IPs and protocols we listen for
-Port 22
-GatewayPorts yes
-```
-
-
-
-tunnel-ssh supports the default ssh2 configuration.
-```js
-// Or use a full blown ssh2 config, to fit your needs..
-{
-    username: 'root',
-    port: 22,
-    srcPort: 0,
-    srcHost: 'localhost',
-    dstPort: null,
-    dstHost: 'localhost',
-    localHost: 'localhost'
-    agent : process.env.SSH_AUTH_SOCK,
-    privateKey:require('fs').readFileSync('/here/is/my/key'),
-    password:'secret'
-} 
-
 ```
