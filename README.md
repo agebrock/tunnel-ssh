@@ -82,7 +82,7 @@ Properties:
 ```js
 
     var config = {
-      user:'root',
+      username:'root',
       host:sshServer,
       port:22,
       dstHost:destinationServer,
@@ -108,7 +108,7 @@ the same port as "dstPort".
 ```js
 
     var config = {
-      user:'root',
+      username:'root',
       dstHost:destinationServer,
       dstPort:27017
     };
