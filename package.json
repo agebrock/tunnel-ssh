@@ -22,11 +22,25 @@
   "license": "MIT",
   "dependencies": {
     "debug": "2.2.0",
-    "lodash.defaults": "4.0.1",
+    "lodash.defaults": "^4.1.0",
     "ssh2": "0.5.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
-    "mocha": "2.5.3"
+    "eslint": "^3.2.2",
+    "eslint-config-xo": "^0.15.3",
+    "mocha": "^3.0.2"
+  },
+  "eslintConfig": {
+    "extends": "xo",
+    "env": {
+      "mocha": true
+    },
+    "rules": {
+      "indent": [
+        "error",
+        4
+      ]
+    }
   }
 }
