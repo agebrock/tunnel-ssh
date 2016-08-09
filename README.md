@@ -86,8 +86,8 @@ Properties:
       host:sshServer,
       port:22,
       dstHost:destinationServer,
-      dstPort:27017
-      localHost:'127.0.0.1'
+      dstPort:27017,
+      localHost:'127.0.0.1',
       localPort: 27000
     };
     
