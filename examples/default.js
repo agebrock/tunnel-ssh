@@ -1,11 +1,6 @@
 var tunnel = require('../');
 var helper = require('./server');
 
-// Keep alive example
-// this example demonstrates the keepAlive option.
-// keepAlive will reuse the connections
-// note the "tunnelKeepAlive.close();" at the end.
-// this step is required to finish execution nicely
 
 var config = {
   host: '127.0.0.1',
