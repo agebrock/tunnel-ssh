@@ -30,7 +30,7 @@
   "devDependencies": {
     "chai": "3.5.0",
     "eslint": "^3.2.2",
-    "eslint-config-xo": "^0.15.3",
+    "eslint-config-xo": "^0.17.0",
     "mocha": "^3.0.2"
   },
   "eslintConfig": {
