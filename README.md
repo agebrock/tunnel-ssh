@@ -8,20 +8,15 @@ One to connect them all !
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
 Trouble ? Please study the ssh2 configuration.
 
-Changelog 4.1.0 / 2016-08-09
-==================
+### Latest Relese 4.1.1
 
-  * style: Change codestyle to xo.
-  * Refactor: Improved configuration error handling.
-  * refactor: clean up examples
-  * style: Remove jscs in favor of eslint.
-  * doc: Improve examples
-  * Merge pull request #42 from kinsi55/master
-  * Merge pull request #43 from pedroventura/master
-  * doc: Update Readme.md
-  * Fix wrong comparison causing localPort to stay "null" if not explicitly defined.
-  * Doc: Update Readme.md
-  
+##Highlights
+* Updated packages to the latest versions
+* Add "npm test" for eslint and mocha
+* Password and PrivateKey are hidden when using Debug (DEBUG=tunnel-ssh-config)
+
+Special thanks to
+@vweevers and @dickeyxxx
 
 
 ### related projects
@@ -30,7 +25,7 @@ Changelog 4.1.0 / 2016-08-09
 
 ### Integration
 By default tunnel-ssh will close the tunnel after a client disconnects, so your cli tools should work in the same way, they do if you connect directly.
-If you need the tunnel to stay open, use the "keepAlive:true" option within 
+If you need the tunnel to stay open, use the "keepAlive:true" option within
 the configuration.
 
 
@@ -40,24 +35,24 @@ the configuration.
       ...
       keepAlive:true
     };
-    
+
     var tnl = tunnel(config, function(error, tnl){
           yourClient.connect();
           yourClient.disconnect();
           setTimeout(function(){
-            // you only need to close the tunnel by yourself if you set the 
+            // you only need to close the tunnel by yourself if you set the
             // keepAlive:true option in the configuration !
             tnl.close();
-          },2000);  
+          },2000);
       });
-    
+
     // you can also close the tunnel from here...
     setTimeout(function(){
       tnl.close();
-    },2000);  
+    },2000);
 
 ```
- 
+
 
 ## Understanding the configuration
 
@@ -68,7 +63,7 @@ Properties:
 ** localPort (default is dstPort)
 
 
-2. The ssh configuration 
+2. The ssh configuration
 Description: The host you want to use as ssh-tunnel server.
 Properties:
 ** host
@@ -77,9 +72,9 @@ Properties:
 ** ...
 
 
-3. The destination host configuration (based on the ssh host) 
+3. The destination host configuration (based on the ssh host)
 Imagine you just connected to The host you want to connect to. (via host:port)
-now that server connects requires a target to tunnel to. 
+now that server connects requires a target to tunnel to.
 Properties:
 ** dstHost (localhost)
 ** dstPort
@@ -98,7 +93,7 @@ Properties:
       localHost:'127.0.0.1',
       localPort: 27000
     };
-    
+
     var tunnel = require('tunnel-ssh');
     tunnel(config, function (error, server) {
       //....
@@ -110,7 +105,7 @@ In many cases host 1. and 2. are the same, for example if you want to connect to
 where the port from that database is bound to a local interface (127.0.0.1:27017)
 but you are able to connect via ssh (port 22 by default).
 You can skip the "dstHost" or the "host" configuration if they are the same.
-You can also skip the local configuration if you want to connect to localhost and 
+You can also skip the local configuration if you want to connect to localhost and
 the same port as "dstPort".
 
 ```js
@@ -120,7 +115,7 @@ the same port as "dstPort".
       dstHost:destinationServer,
       dstPort:27017
     };
-    
+
     var tunnel = require('tunnel-ssh');
     tunnel(config, function (error, server) {
       //....
@@ -129,19 +124,19 @@ the same port as "dstPort".
 
 #### More configuration options
 tunnel-ssh pipes the configuration direct into the ssh2 library so every config option
-provided by ssh2 still works. 
+provided by ssh2 still works.
 
 Common examples are:
 ```js
-    
+
     var config = {
       agent : process.env.SSH_AUTH_SOCK, // enabled by default
       privateKey:require('fs').readFileSync('/here/is/my/key'),
       password:'secret'
     }
-    
+
 ```
-    
+
 ####catch errors:
 ```js
     var tunnel = require('tunnel-ssh');
