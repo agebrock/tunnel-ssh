@@ -61,7 +61,6 @@ function createServer(config) {
         });
 
         connections.push(sshConnection, netConnection);
-        debug('sshConfig', config);
         sshConnection.connect(config);
     });
 
