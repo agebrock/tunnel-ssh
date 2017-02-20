@@ -1,6 +1,14 @@
 var tunnel = require('../');
 var helper = require('./server');
 
+
+/**
+make sure you can connect to your own machine with the current user without password.
+Example:  ssh $USER@127.0.0.1
+
+Remember to add your privateKey to your ssh-agent (ssh-add)
+**/
+
 var config = {
     host: '127.0.0.1', username: process.env.USER, dstPort: 8000, localPort: 7000
 };
