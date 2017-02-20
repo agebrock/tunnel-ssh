@@ -8,7 +8,7 @@ One to connect them all !
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
 Trouble ? Please study the ssh2 configuration.
 
-### Latest Relese 4.1.1
+### Latest Relese 4.1.2
 
 ##Highlights
 * Updated packages to the latest versions
