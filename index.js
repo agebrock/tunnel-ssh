@@ -8,6 +8,7 @@ var noop = function () {
 
 function bindSSHConnection(config, netConnection) {
     var sshConnection = new Connection();
+    netConnection.on('close', sshConnection.end.bind(sshConnection));
 
     sshConnection.on('ready', function () {
         debug('sshConnection:ready');
@@ -30,11 +31,11 @@ function bindSSHConnection(config, netConnection) {
 
 function createServer(config) {
     var server;
-    var sshConnection;
     var connections = [];
     var connectionCount = 0;
 
     server = net.createServer(function (netConnection) {
+        var sshConnection;
         connectionCount++;
         netConnection.on('error', server.emit.bind(server, 'error'));
         netConnection.on('close', function () {
