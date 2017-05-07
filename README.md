@@ -8,18 +8,18 @@ One to connect them all !
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
 Trouble ? Please study the ssh2 configuration.
 
-### Latest Relese 4.1.2
+### Latest Relese 4.1.3
 
-##Highlights
-* Updated packages to the latest versions
-* Add "npm test" for eslint and mocha
-* Password and PrivateKey are hidden when using Debug (DEBUG=tunnel-ssh-config)
+## Release notes
+* Closing sshconnections correctly thx @actionshrimp
+* Improved readme
+* Updated modules
 
 Special thanks to
 @vweevers and @dickeyxxx
 
 
-### related projects
+### Related projects
 * [If you don't want to wrap a tunnel around your code: inject-tunnel-ssh](https://github.com/agebrock/inject-tunnel-ssh)
 * [If you need it the other way around: reverse-tunnel-ssh](https://github.com/agebrock/reverse-tunnel-ssh)
 
@@ -86,6 +86,7 @@ Properties:
 
     var config = {
       username:'root',
+      Password:'secret',
       host:sshServer,
       port:22,
       dstHost:destinationServer,
@@ -101,43 +102,27 @@ Properties:
 ```
 #### Sugar configuration
 
-In many cases host 1. and 2. are the same, for example if you want to connect to a database
-where the port from that database is bound to a local interface (127.0.0.1:27017)
-but you are able to connect via ssh (port 22 by default).
-You can skip the "dstHost" or the "host" configuration if they are the same.
-You can also skip the local configuration if you want to connect to localhost and
-the same port as "dstPort".
+tunnel-ssh assumes that you want to map the same port on a remote machine to your localhost using the ssh-server on the remote machine.
+
 
 ```js
 
     var config = {
       username:'root',
-      dstHost:destinationServer,
-      dstPort:27017
+      dstHost:'remotehost.with.sshserver.com',
+      dstPort:27017,
+      privateKey:require(fs.readFileSync('/path/to/key'),
+      passphrase:'secret'
     };
 
-    var tunnel = require('tunnel-ssh');
-    tunnel(config, function (error, server) {
-      //....
-    });
 ```
 
 #### More configuration options
-tunnel-ssh pipes the configuration direct into the ssh2 library so every config option
-provided by ssh2 still works.
+tunnel-ssh pipes the configuration direct into the ssh2 library so every config option provided by ssh2 still works.
+[ssh2 configuration](https://github.com/mscdex/ssh2#client-methods)
 
-Common examples are:
-```js
 
-    var config = {
-      agent : process.env.SSH_AUTH_SOCK, // enabled by default
-      privateKey:require('fs').readFileSync('/here/is/my/key'),
-      password:'secret'
-    }
-
-```
-
-####catch errors:
+#### catching errors:
 ```js
     var tunnel = require('tunnel-ssh');
     //map port from remote 3306 to localhost 3306
