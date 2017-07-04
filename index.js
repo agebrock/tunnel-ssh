@@ -6,9 +6,8 @@ var events = require('events');
 var noop = function () {
 };
 
-function bindSSHConnection(config, netConnection) {
-    var sshConnection = new Connection();
-    netConnection.on('close', sshConnection.end.bind(sshConnection));
+function bindSSHConnection(config, netConnection, sshConnection) {
+   // netConnection.on('close', sshConnection.end.bind(sshConnection));
 
     sshConnection.on('ready', function () {
         debug('sshConnection:ready');
@@ -33,12 +32,13 @@ function createServer(config) {
     var server;
     var connections = [];
     var connectionCount = 0;
-
+    var sshConnection = new Connection();
+    sshConnection.connect(config);
     server = net.createServer(function (netConnection) {
-        var sshConnection;
         connectionCount++;
         netConnection.on('error', server.emit.bind(server, 'error'));
-        netConnection.on('close', function () {
+        netConnection.on('end', function () {
+            debug('netConnection::end');
             connectionCount--;
             if (connectionCount === 0) {
                 if (!config.keepAlive) {
@@ -52,23 +52,20 @@ function createServer(config) {
         });
 
         server.emit('netConnection', netConnection, server);
-        sshConnection = bindSSHConnection(config, netConnection);
-        sshConnection.on('error', server.emit.bind(server, 'error'));
-
+        bindSSHConnection(config, netConnection, sshConnection);
         netConnection.on('sshStream', function (sshStream) {
+            connections.push(netConnection);
             sshStream.on('error', function () {
                 server.close();
             });
         });
-
-        connections.push(sshConnection, netConnection);
-        sshConnection.connect(config);
     });
-
+    sshConnection.on('error', server.emit.bind(server, 'error'));
     server.on('close', function () {
         connections.forEach(function (connection) {
             connection.end();
         });
+        sshConnection.end();
     });
 
     return server;
