@@ -23,7 +23,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "debug": "2.6.0",
+    "debug": "2.6.8",
     "lodash.defaults": "^4.1.0",
     "ssh2": "0.5.4"
   },
