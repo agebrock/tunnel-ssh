@@ -86,7 +86,7 @@ Properties:
 
     var config = {
       username:'root',
-      Password:'secret',
+      password:'secret',
       host:sshServer,
       port:22,
       dstHost:destinationServer,
@@ -111,7 +111,7 @@ tunnel-ssh assumes that you want to map the same port on a remote machine to you
       username:'root',
       dstHost:'remotehost.with.sshserver.com',
       dstPort:27017,
-      privateKey:require(fs.readFileSync('/path/to/key'),
+      privateKey:require('fs').readFileSync('/path/to/key'),
       passphrase:'secret'
     };
 
