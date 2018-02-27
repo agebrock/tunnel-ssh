@@ -1,6 +1,6 @@
 {
   "name": "tunnel-ssh",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,7 @@
     "chai": "3.5.0",
     "eslint": "^3.2.2",
     "eslint-config-xo": "^0.17.0",
-    "mocha": "^3.0.2"
+    "mocha": "^3.5.3"
   },
   "eslintConfig": {
     "extends": "xo",
