@@ -86,7 +86,7 @@ Properties:
 
     var config = {
       username:'root',
-      Password:'secret',
+      password:'secret',
       host:sshServer,
       port:22,
       dstHost:destinationServer,
