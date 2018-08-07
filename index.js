@@ -62,7 +62,13 @@ function createServer(config) {
         });
 
         connections.push(sshConnection, netConnection);
-        sshConnection.connect(config);
+        try
+        {
+            sshConnection.connect(config);
+        }catch(error)
+        {
+            server.emit('error', error);
+        }
     });
 
     server.on('close', function () {
