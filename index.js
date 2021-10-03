@@ -1,6 +1,6 @@
 var net = require('net');
 var debug = require('debug')('tunnel-ssh');
-var Connection = require('ssh2');
+var Connection = require('ssh2').Client;
 var createConfig = require('./lib/config');
 var events = require('events');
 var noop = function () {
@@ -27,6 +27,13 @@ function bindSSHConnection(config, netConnection) {
         });
     });
     return sshConnection;
+}
+
+function omit(obj, keys) {
+    return keys.reduce(function (copyObj, key) {
+        delete copyObj[key];
+        return copyObj;
+    }, Object.assign({}, obj));
 }
 
 function createServer(config) {
@@ -62,11 +69,9 @@ function createServer(config) {
         });
 
         connections.push(sshConnection, netConnection);
-        try
-        {
-            sshConnection.connect(config);
-        }catch(error)
-        {
+        try {
+            sshConnection.connect(omit(config, ['localPort', 'localHost']));
+        } catch (error) {
             server.emit('error', error);
         }
     });
