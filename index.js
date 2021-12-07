@@ -29,6 +29,44 @@ function bindSSHConnection(config, netConnection) {
     return sshConnection;
 }
 
+function bindSSHJumpServerConnection(config, sshConnection) {
+    var jumpConnection = new Connection();
+    sshConnection.on('close', jumpConnection.end.bind(jumpConnection));
+
+    jumpConnection.on('ready', function () {
+        debug('sshJumpServerConnection:ready');
+        sshConnection.emit('sshJumpServerConnection', jumpConnection, sshConnection);
+        jumpConnection.forwardOut(
+            config.srcHost,
+            config.srcPort,
+            config.host,
+            config.port,
+            function (err, sshStream) {
+                if (err) {
+                    // Bubble up the error => jumpConnection => sshConnection
+                    sshConnection.emit('error', err);
+                    debug('Destination port:', err);
+                    return;
+                }
+
+                try {
+                    sshConnection.connect(
+                        Object.assign(
+                            {
+                                sock: sshStream,
+                            },
+                            omit(config, ['localPort', 'localHost'])
+                        )
+                    );
+                } catch (error) {
+                    sshConnection.emit('error', error);
+                }
+            }
+        );
+    });
+    return jumpConnection;
+}
+
 function omit(obj, keys) {
     return keys.reduce(function (copyObj, key) {
         delete copyObj[key];
@@ -60,6 +98,14 @@ function createServer(config) {
 
         server.emit('netConnection', netConnection, server);
         sshConnection = bindSSHConnection(config, netConnection);
+
+        if (config.jumpServer) {
+            var sshJumpConnection = bindSSHJumpServerConnection(config, sshConnection);
+            sshConnection.on('error', sshJumpConnection.emit.bind(sshJumpConnection, 'error'));
+            sshConnection = sshJumpConnection;
+            config = config.jumpServer;
+        }
+
         sshConnection.on('error', server.emit.bind(server, 'error'));
 
         netConnection.on('sshStream', function (sshStream) {
