@@ -1,6 +1,6 @@
 # Tunnel-SSH
 
-⚠️ **See ide#397 for why this exists in DeepChannel** ⚠️
+⚠️ **See https://github.com/DeepChannel/tunnel-ssh for why this exists in DeepChannel. Note that tunnel-ssh@4.1.6 has now been published to npm and so we can delete this repo once we are sure we don't have any builds left that depend on it** ⚠️
 
 One to connect them all !
 
