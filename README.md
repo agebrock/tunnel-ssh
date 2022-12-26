@@ -2,10 +2,9 @@ Tunnel-SSH
 
 ==========
 
-  
-
-One to connect them all !
-
+```bash
+ssh -L [LOCAL_IP:]LOCAL_PORT:DESTINATION:DESTINATION_PORT [USER@]SSH_SERVER
+```
   
 
 ![Tunnel-SSH Logo](http://i.imgur.com/I5PRnDD.jpg)
@@ -14,6 +13,8 @@ One to connect them all !
 
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
   
+
+
 
 ### Latest Release 5.0.0
 
@@ -136,13 +137,19 @@ For a list of all possible Events please refere to the node.js documentation for
 
 
 ### Usage Example
+
+The following example shows how to connect to a remote mongodb and bind it to all local interfaces. 
+
 ```js
-const { createTunnel } = require('tunnel-ssh');
+import {createTunnel} from 'tunnel-ssh';
+
+const port = 27017;
+
 const tunnelOptions = {
 	autoClose:true
 };
 const serverOptions = {
-	port: 27017
+	port: port
 };
 const sshOptions = {
 	host: '192.168.100.100',
@@ -152,12 +159,12 @@ const sshOptions = {
 };
 const forwardOptions = {
 	srcAddr:'0.0.0.0',
-	srcPort:27017,
+	srcPort:port,
 	dstAddr:'127.0.0.1',
-	dstPort:27017
+	dstPort:port
 };
 
-[server, conn] = await createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
+let [server, conn] = await createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
 
 server.on('connection', (connection) =>{
     console.log('new connection');
