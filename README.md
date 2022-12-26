@@ -8,20 +8,34 @@ One to connect them all !
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
 Trouble ? Please study the ssh2 configuration.
 
-### Latest Relese 4.1.3
+### Latest Relese 5.0.0
 
-## Release notes
-* Closing sshconnections correctly thx @actionshrimp
-* Improved readme
-* Updated modules
+### Breaking change in 5.0.0
+Please note that release 5.0.0 uses a complete different approch for configuration and is not compatible to prio versions.
 
-Special thanks to
-@vweevers and @dickeyxxx
+## Concept
+Tunnel-ssh v5 is designed to be very extendable and does not provide as much sematic sugar as prio versions.
+The design goal was to use the original settings for each part used in the project to be able to use all possible 
+binding features from client and server. 
+
+The configuration is separated in the following parts:
+
+* Tunnel server
+* TCP Server
+* SSH Client
+* SSH Forwarding
 
 
-### Related projects
-* [If you don't want to wrap a tunnel around your code: inject-tunnel-ssh](https://github.com/agebrock/inject-tunnel-ssh)
-* [If you need it the other way around: reverse-tunnel-ssh](https://github.com/agebrock/reverse-tunnel-ssh)
+### Tunnel Server Settings
+This configuration controls be behaviour of the tunnel server. 
+Currently there is only one option available. 
+
+```
+const tunnelOptions = {
+    autoClose:true
+}
+```
+
 
 ### Integration
 By default tunnel-ssh will close the tunnel after a client disconnects, so your cli tools should work in the same way, they do if you connect directly.

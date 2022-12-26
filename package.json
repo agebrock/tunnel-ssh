@@ -1,11 +1,9 @@
 {
   "name": "tunnel-ssh",
-  "version": "4.1.6",
+  "version": "5.0.0",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
-  "scripts": {
-    "test": "mocha && eslint ."
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/agebrock/tunnel-ssh"
@@ -15,7 +13,9 @@
     "ssh",
     "mysql",
     "develop",
-    "net"
+    "net",
+    "ssh-tunnel",
+    "network"
   ],
   "author": {
     "name": "Christoph Hagenbrock",
@@ -23,26 +23,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "debug": "2.6.9",
-    "lodash.defaults": "^4.1.0",
-    "ssh2": "1.4.0"
-  },
-  "devDependencies": {
-    "chai": "3.5.0",
-    "eslint": "^3.2.2",
-    "eslint-config-xo": "^0.17.0",
-    "mocha": "^3.5.3"
-  },
-  "eslintConfig": {
-    "extends": "xo",
-    "env": {
-      "mocha": true
-    },
-    "rules": {
-      "indent": [
-        "error",
-        4
-      ]
-    }
+    "ssh2": "^1.11.0"
   }
 }
