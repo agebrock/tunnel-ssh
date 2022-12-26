@@ -49,7 +49,7 @@ Example:
 
 ```js
 const tunnelOptions = {
-    autoClose:true
+  autoClose:true
 }
 ```
 
@@ -70,7 +70,7 @@ Example:
 ```js
 const serverOptions = {
 	host:'127.0.0.1',
-    port: 27017
+  port: 27017
 }
 ```
 
@@ -99,10 +99,10 @@ Example:
 
 ```js
 const forwardOptions = {
-    srcAddr:'0.0.0.0',
-    srcPort:27017,
-    dstAddr:'127.0.0.1',
-    dstPort:27017
+  srcAddr:'0.0.0.0',
+  srcPort:27017,
+  dstAddr:'127.0.0.1',
+  dstPort:27017
 }
 ```
 
