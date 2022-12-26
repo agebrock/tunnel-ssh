@@ -1,8 +1,11 @@
 {
   "name": "tunnel-ssh",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
+  "publishConfig":{
+    "registry":"https://registry.npmjs.org"
+  },
   "scripts": {},
   "repository": {
     "type": "git",

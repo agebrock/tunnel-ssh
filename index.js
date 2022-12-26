@@ -2,15 +2,14 @@ const net = require('net');
 const { Client } = require('ssh2');
 
 
-function autoClose(server){
-    let interval = setInterval(()=>{
+function autoClose(server, connection){
+    connection.on('close',()=>{
         server.getConnections((error, count)=>{
             if(count === 0){
                 server.close();
-                clearInterval(interval);
             }
         });
-    }, 1000);
+    });
 }
 
 async function createServer(options){
@@ -33,15 +32,14 @@ async function createClient(config){
 
 async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions){
 
-    let isVirginConnection = true;
-
     return new Promise(function(resolve, reject){
         createServer(serverOptions).then(function(server, reject){
             createClient(sshOptions).then(function(conn){
+               
                 server.on('connection',(connection)=>{
-                    if(isVirginConnection && tunnelOptions.autoClose){
-                        isVirginConnection = false;
-                        autoClose(server);
+                    
+                    if(tunnelOptions.autoClose){
+                        autoClose(server, connection);
                     }
 
                     conn.forwardOut(
@@ -51,6 +49,7 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
                         forwardOptions.dstPort, (err, stream) => {
                             connection.pipe(stream).pipe(connection);
                     });
+
                 });
                 server.on('close',()=> conn.end());
                 resolve([server, conn]);
@@ -58,5 +57,6 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
         });
     });
 }
+
 
 exports.createTunnel = createTunnel;

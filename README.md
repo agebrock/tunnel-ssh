@@ -49,7 +49,7 @@ Example:
 
 ```js
 const tunnelOptions = {
-  autoClose:true
+	autoClose:true
 }
 ```
 
@@ -70,7 +70,7 @@ Example:
 ```js
 const serverOptions = {
 	host:'127.0.0.1',
-  port: 27017
+	port: 27017
 }
 ```
 
@@ -85,10 +85,10 @@ Example:
 
 ```js
 const sshOptions = {
-  host: '192.168.100.100',
-  port: 22,
-  username: 'frylock',
-  password: 'nodejsrules'
+	host: '192.168.100.100',
+	port: 22,
+	username: 'frylock',
+	password: 'nodejsrules'
 };
 ```
 
@@ -99,10 +99,10 @@ Example:
 
 ```js
 const forwardOptions = {
-  srcAddr:'0.0.0.0',
-  srcPort:27017,
-  dstAddr:'127.0.0.1',
-  dstPort:27017
+	srcAddr:'0.0.0.0',
+	srcPort:27017,
+	dstAddr:'127.0.0.1',
+	dstPort:27017
 }
 ```
 
@@ -139,11 +139,11 @@ For a list of all possible Events please refere to the node.js documentation for
 ```js
 const { createTunnel } = require('tunnel-ssh');
 const tunnelOptions = {
-    autoClose:true
-}
+	autoClose:true
+};
 const serverOptions = {
-    port: 27017
-}
+	port: 27017
+};
 const sshOptions = {
 	host: '192.168.100.100',
 	port: 22,
@@ -151,11 +151,11 @@ const sshOptions = {
 	password: 'nodejsrules'
 };
 const forwardOptions = {
-    srcAddr:'0.0.0.0',
-    srcPort:27017,
-    dstAddr:'127.0.0.1',
-    dstPort:27017
-}
+	srcAddr:'0.0.0.0',
+	srcPort:27017,
+	dstAddr:'127.0.0.1',
+	dstPort:27017
+};
 
 [server, conn] = await createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
 
