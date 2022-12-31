@@ -170,3 +170,40 @@ server.on('connection', (connection) =>{
     console.log('new connection');
 });
 ```
+
+### Too complicated ?
+
+If you just searching for an easy way to forward a remote port to your local machine try the followwing:
+
+```js
+
+import {createTunnel} from 'tunnel-ssh';
+const sshOptions = {
+	host: '192.168.100.100',
+	port: 22,
+	username: 'frylock',
+	password: 'nodejsrules'
+};
+
+function mySimpleTunnel(sshOptions, port, autoClose = true){
+    let forwardOptions = {
+        srcAddr:'127.0.0.1',
+        srcPort:port,
+        dstAddr:'127.0.0.1',
+        dstPort:port
+    }
+
+    let tunnelOptions = {
+        autoClose:autoClose
+    }
+    
+    let serverOptions = {
+        port: port
+    }
+
+    return createTunnel(tunnelOptions, serverOptions, sshOptions, autoClose);
+}
+
+await tunnel(sshOptions, 27017);
+
+```
