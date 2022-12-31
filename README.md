@@ -173,7 +173,7 @@ server.on('connection', (connection) =>{
 
 ### Too complicated ?
 
-If you just searching for an easy way to forward a remote port to your local machine try the followwing:
+If you just searching for an easy way to forward a remote port to your local machine try the following:
 
 ```js
 

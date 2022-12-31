@@ -3,8 +3,8 @@
   "version": "5.0.2",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
-  "publishConfig":{
-    "registry":"https://registry.npmjs.org"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   },
   "scripts": {},
   "repository": {
@@ -26,6 +26,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "ssh2": "^1.11.0"
+    "ssh2": "^1.11.0",
+    "tunnel-ssh": "^5.0.0"
   }
 }
