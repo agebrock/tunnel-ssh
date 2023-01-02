@@ -204,6 +204,6 @@ function mySimpleTunnel(sshOptions, port, autoClose = true){
     return createTunnel(tunnelOptions, serverOptions, sshOptions, autoClose);
 }
 
-await tunnel(sshOptions, 27017);
+await mySimpleTunnel(sshOptions, 27017);
 
 ```
