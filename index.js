@@ -16,7 +16,7 @@ async function createServer(options){
     return new Promise(function(resolve, reject){
         let server = net.createServer();
         server.listen(options);
-        server.on('listening', ()=> resolve(server)); 
+        server.on('listening', ()=> resolve(server));
         server.on('error', reject);
     });
 }
@@ -33,19 +33,19 @@ async function createClient(config){
 async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions){
 
     return new Promise(function(resolve, reject){
-        createServer(serverOptions).then(function(server, reject){
+        createServer(serverOptions).then(function(server){
             createClient(sshOptions).then(function(conn){
-               
+
                 server.on('connection',(connection)=>{
-                    
+
                     if(tunnelOptions.autoClose){
                         autoClose(server, connection);
                     }
 
                     conn.forwardOut(
-                        forwardOptions.srcAddr, 
-                        forwardOptions.srcPort, 
-                        forwardOptions.dstAddr, 
+                        forwardOptions.srcAddr,
+                        forwardOptions.srcPort,
+                        forwardOptions.dstAddr,
                         forwardOptions.dstPort, (err, stream) => {
                             connection.pipe(stream).pipe(connection);
                     });
@@ -53,8 +53,8 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
                 });
                 server.on('close',()=> conn.end());
                 resolve([server, conn]);
-            });
-        });
+            }).catch(reject);
+        }).catch(reject);
     });
 }
 
