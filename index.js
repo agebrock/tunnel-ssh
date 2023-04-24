@@ -44,6 +44,9 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
         try {
             server = await createServer(serverOptions);
         } catch (e) {
+            if (server) {
+                server.close()
+            }
             return reject(e);
         }
 
