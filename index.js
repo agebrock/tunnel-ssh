@@ -44,15 +44,15 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
         try {
             server = await createServer(serverOptions);
         } catch (e) {
-            if (server) {
-                server.close()
-            }
             return reject(e);
         }
 
         try {
             conn = await createClient(sshOptions);
         } catch (e) {
+            if (server) {
+                server.close()
+            }
             return reject(e);
         }
         server.on('connection', (connection) => {
@@ -66,7 +66,14 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
                 forwardOptions.srcPort,
                 forwardOptions.dstAddr,
                 forwardOptions.dstPort, (err, stream) => {
-                    connection.pipe(stream).pipe(connection);
+                    if (err) {
+                        if (server) {
+                            server.close()
+                        }
+                        throw err;
+                    } else {
+                        connection.pipe(stream).pipe(connection);
+                    }
                 });
 
         });
