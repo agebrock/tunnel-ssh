@@ -201,7 +201,7 @@ function mySimpleTunnel(sshOptions, port, autoClose = true){
         port: port
     }
 
-    return createTunnel(tunnelOptions, serverOptions, sshOptions, autoClose);
+    return createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
 }
 
 await mySimpleTunnel(sshOptions, 27017);
