@@ -13,6 +13,12 @@ function autoClose(server, connection) {
 }
 
 async function createServer(options) {
+    let serverOptions = Object.assign({}, options);
+    
+    if(!serverOptions.port && !serverOptions.path){
+        serverOptions = null;
+    }
+
     return new Promise((resolve, reject) => {
         let server = net.createServer();
         let errorHandler = function (error) {
@@ -20,7 +26,8 @@ async function createServer(options) {
         };
         server.on('error', errorHandler);
         process.on('uncaughtException', errorHandler);
-        server.listen(options);
+ 
+        server.listen(serverOptions);
         server.on('listening', () => {
             process.removeListener('uncaughtException', errorHandler);
             resolve(server);
@@ -39,10 +46,19 @@ async function createClient(config) {
 
 async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions) {
 
+   let forwardOptionsLocal = Object.assign({}, forwardOptions);
+   let tunnelOptionsLocal = Object.assign({}, tunnelOptions || {});
+
     return new Promise(async function (resolve, reject) {
         let server, conn;
         try {
             server = await createServer(serverOptions);
+            if(!forwardOptionsLocal.srcPort){
+                forwardOptionsLocal.srcPort = server.address().port;
+            }
+            if(!forwardOptionsLocal.srcAddr){
+                forwardOptionsLocal.srcAddr = server.address().address;
+            }
         } catch (e) {
             return reject(e);
         }
@@ -57,15 +73,15 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
         }
         server.on('connection', (connection) => {
 
-            if (tunnelOptions.autoClose) {
+            if (tunnelOptionsLocal.autoClose) {
                 autoClose(server, connection);
             }
 
             conn.forwardOut(
-                forwardOptions.srcAddr,
-                forwardOptions.srcPort,
-                forwardOptions.dstAddr,
-                forwardOptions.dstPort, (err, stream) => {
+                forwardOptionsLocal.srcAddr,
+                forwardOptionsLocal.srcPort,
+                forwardOptionsLocal.dstAddr,
+                forwardOptionsLocal.dstPort, (err, stream) => {
                     if (err) {
                         if (server) {
                             server.close()

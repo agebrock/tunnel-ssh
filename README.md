@@ -10,13 +10,27 @@ ssh -L [LOCAL_IP:]LOCAL_PORT:DESTINATION:DESTINATION_PORT [USER@]SSH_SERVER
 ![Tunnel-SSH Logo](http://i.imgur.com/I5PRnDD.jpg)
 
   
+### History and Credits
+Once upon a time this package was created to show my colleges how to create and publish a npm package. 
+That time we used ssh tunnels on our unix machines on a daily bases, so decided to to do it with node. 
+This was about 6 years ago, where javascript was a callback hell. 
 
+Since then this project is pretty much community driven by pull requests and suggestions.
+
+
+Thank you for your support. 
+
+Special thanks goes to the following brothers in arms:
 Tunnel-ssh is based on the fantastic [ssh2](https://github.com/mscdex/ssh2) library by Brian White.
+
+Vlad Barboni for the initial brainstorming.
+derekrliang for providing the type definitions.
+lenchvolodymyr for the idea of the dynamic port mapping.
   
 
 
 
-### Latest Release 5.0.0
+### Latest Release 5.x.x
 
   
 
@@ -60,6 +74,8 @@ For example a mongodump.
 
 Set this option to **false** will keep the server alive until you close it manually.
 
+
+
 ### TCP Server options
 
 Controls the behaviour of the tcp server on your local machine. 
@@ -74,6 +90,13 @@ const serverOptions = {
 	port: 27017
 }
 ```
+
+
+If port is omitted or is 0, the operating system will assign an arbitrary unused port, which can be retrieved by using server.address().port after the ['listening'](https://nodejs.org/api/net.html#event-listening) event has been emitted.
+
+To use the automatic assigned port in the forwardOptions make sure forwardOptions.srcPort is not defined.
+
+
 
 
 ### SSH client options
@@ -105,6 +128,39 @@ const forwardOptions = {
 	dstAddr:'127.0.0.1',
 	dstPort:27017
 }
+```
+
+Note: If the srcAddr or srcPort is not defined, the adress will be taken from the local TCP server.
+This is usefull if you want to create a tunnel and let the OS decide what port should be used. 
+
+Example:
+```js
+	const tunnelOptions = {
+		autoClose:true
+	}
+
+	const sshOptions = {
+		host: '192.168.100.100',
+		port: 22,
+		username: 'frylock',
+		password: 'nodejsrules'
+	};
+
+	// Here is where the magic happens...
+	const serverOptions = null; // automatic assign port by OS
+	
+	// Note that the forwarding options does not define the srcAddr and srcPort here.
+	// to use the server configuration. 
+	const forwardOptions = {
+		dstAddr:'127.0.0.1',
+		dstPort:27017
+	}
+	
+
+    let [server, client] = await createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
+ 
+	// Example how to get the server port information.
+    console.log(`server listen on ${server.address().port}`)
 ```
 
 
