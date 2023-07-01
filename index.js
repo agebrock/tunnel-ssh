@@ -14,8 +14,8 @@ function autoClose(server, connection) {
 
 async function createServer(options) {
     let serverOptions = Object.assign({}, options);
-    
-    if(!serverOptions.port && !serverOptions.path){
+
+    if (!serverOptions.port && !serverOptions.path) {
         serverOptions = null;
     }
 
@@ -26,7 +26,7 @@ async function createServer(options) {
         };
         server.on('error', errorHandler);
         process.on('uncaughtException', errorHandler);
- 
+
         server.listen(serverOptions);
         server.on('listening', () => {
             process.removeListener('uncaughtException', errorHandler);
@@ -35,7 +35,7 @@ async function createServer(options) {
     });
 }
 
-async function createClient(config) {
+async function createSSHConnection(config) {
     return new Promise(function (resolve, reject) {
         let conn = new Client();
         conn.on('ready', () => resolve(conn));
@@ -44,40 +44,74 @@ async function createClient(config) {
     });
 }
 
-async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions) {
+async function createTunnel({ tunnelOptions, serverOptions, sshOptions, forwardOptions }) {
 
-   let forwardOptionsLocal = Object.assign({}, forwardOptions);
-   let tunnelOptionsLocal = Object.assign({}, tunnelOptions || {});
+    let sshOptionslocal = Object.assign({ port: 22 }, sshOptions);
+
+    let forwardOptionsLocal = Object.assign({ dstAddr: '0.0.0.0' }, forwardOptions);
+
+    let tunnelOptionsLocal = Object.assign({ autoClose: false, reconnectOnError: false }, tunnelOptions || {});
+
+    let server, sshConnection;
+
 
     return new Promise(async function (resolve, reject) {
-        let server, conn;
+
         try {
             server = await createServer(serverOptions);
-            if(!forwardOptionsLocal.srcPort){
-                forwardOptionsLocal.srcPort = server.address().port;
-            }
-            if(!forwardOptionsLocal.srcAddr){
-                forwardOptionsLocal.srcAddr = server.address().address;
-            }
+            addListenerServer(server);
         } catch (e) {
             return reject(e);
         }
 
         try {
-            conn = await createClient(sshOptions);
+            sshConnection = await createSSHConnection(sshOptionslocal);
+            addListenerSshConnection(sshConnection);
         } catch (e) {
             if (server) {
                 server.close()
             }
             return reject(e);
         }
-        server.on('connection', (connection) => {
+        function addListenerSshConnection(sshConnection) {
+            if (tunnelOptionsLocal.reconnectOnError) {
+                sshConnection.on('error', async () => {
+                    sshConnection.isBroken = true;
+                    sshConnection = await createSSHConnection(sshOptionslocal);
+                    addEventListener(sshConnection);
+                });
+            }
+        }
 
-            if (tunnelOptionsLocal.autoClose) {
-                autoClose(server, connection);
+        function addListenerServer(server) {
+            if (tunnelOptionsLocal.reconnectOnError) {
+                server.on('error', async () => {
+                    server = await createServer(serverOptions);
+                    addListenerServer(server);
+                });
+            }
+            server.on('connection', onConnectionHandler);
+            server.on('close', () => sshConnection.end());
+        }
+
+        function onConnectionHandler(clientConnection) {
+
+            if (!forwardOptionsLocal.srcPort) {
+                forwardOptionsLocal.srcPort = server.address().port;
+            }
+            if (!forwardOptionsLocal.srcAddr) {
+                forwardOptionsLocal.srcAddr = server.address().address;
             }
 
-            conn.forwardOut(
+            if (tunnelOptionsLocal.autoClose) {
+                autoClose(server, clientConnection);
+            }
+
+            if (sshConnection.isBroken) {
+                return;
+            }
+
+            sshConnection.forwardOut(
                 forwardOptionsLocal.srcAddr,
                 forwardOptionsLocal.srcPort,
                 forwardOptionsLocal.dstAddr,
@@ -88,14 +122,12 @@ async function createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOpt
                         }
                         throw err;
                     } else {
-                        connection.pipe(stream).pipe(connection);
+                        clientConnection.pipe(stream).pipe(clientConnection);
                     }
                 });
 
-        });
-
-        server.on('close', () => conn.end());
-        resolve([server, conn]);
+        }
+        resolve([server, sshConnection]);
     });
 }
 

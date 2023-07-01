@@ -1,12 +1,12 @@
 {
   "name": "tunnel-ssh",
-  "version": "5.0.8",
+  "version": "5.0.9",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
-  "scripts": {},
+  "types": "./types/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/agebrock/tunnel-ssh"
