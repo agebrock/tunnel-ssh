@@ -4,8 +4,22 @@
  * Special thanks to https://github.com/derekrliang for the initial file.
  */
 
-import { Server, ListenOptions as ServerOptions } from "net";
-import { Client, ConnectConfig as SshOptions } from "ssh2";
+import { Server, ListenOptions } from "net";
+import { Client, ConnectConfig } from "ssh2";
+
+
+/*
+* SSH client related options.
+* @see https://www.npmjs.com/package/ssh2?activeTab=readme#client-methods
+*/
+export type SshOptions = ConnectConfig;
+
+/*
+* TCP server related options.
+* @see https://nodejs.org/api/net.html#net_server_listen_options_callback
+*/
+export type ServerOptions = ListenOptions;
+
 
 /**
  * Controls be behaviour of the tunnel server.

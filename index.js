@@ -1,6 +1,6 @@
 const net = require('net');
 const { Client } = require('ssh2');
-
+const os = require('os');
 
 function autoClose(server, connection) {
     connection.on('close', () => {

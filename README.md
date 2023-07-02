@@ -28,19 +28,11 @@ derekrliang for providing the type definitions.
 lenchvolodymyr for the idea of the dynamic port mapping.
   
 
-
-
-### Latest Release 5.x.x
-
-  
-
-### Breaking change in 5.0.0
-
-Please note that release 5.0.0 uses a complete different approch for configuration and is not compatible to prio versions.
-
-#### New Features
-* Reuse of ssh client instead of creating a new one for each connection
-* Promise / Async Await support
+### Changelog
+##### 5.1.0 
+* Improved Typescript support
+* sshOptions.username default is root
+* forwardOptions.dstAddr default to 0.0.0.0 (all interfaces)
 
 ## Concept
 
@@ -104,6 +96,26 @@ Options to tell the ssh client how to connect to your remote machine.
 For all possible options please refere to the ssh2 documentation:
 [ssh2 documentation](https://www.npmjs.com/package/ssh2#installation)
 You will find different examples there for using a privateKey, password etc..
+
+## SSH Agent additional information. 
+The most common settings for the agent are : 
+
+```js
+	// for linux
+	{
+		host:'myhost.com'
+		agent:process.env.SSH_AUTH_SOCK
+	}
+	// for windows
+	{
+		agent:'pageant'
+	}
+	// for windows with unix port (wsl docker
+	{
+		agent:'\\\\.\\pipe\\openssh-ssh-agent'
+	}
+
+```
 
 Example:
 
@@ -171,6 +183,18 @@ Tunnel-SSH exposes currently only  one method: **createTunnel**
 ```js
 createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
 ```
+
+## Typescript
+Since 5.0.9 we added our own types to the project.
+For Typescript we export the configuration objects as well. 
+The recommented way of import is as follows:
+
+```Typescript
+import {createTunnel, ForwardOptions, ServerOptions, SshOptions} from 'tunnel-ssh';
+
+// please note that the ForwardingOptions, ServerOptions and SshOptions are Types
+```
+
 
 The method retuns a promise containing the server and ssh-client instance. For most cases you will not need those instances. But in case you want to extend the functionallity you can use them to 
 bind to there events like that: 
