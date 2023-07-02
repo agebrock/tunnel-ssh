@@ -44,9 +44,9 @@ async function createSSHConnection(config) {
     });
 }
 
-async function createTunnel({ tunnelOptions, serverOptions, sshOptions, forwardOptions }) {
+async function createTunnel( tunnelOptions, serverOptions, sshOptions, forwardOptions ) {
 
-    let sshOptionslocal = Object.assign({ port: 22 }, sshOptions);
+    let sshOptionslocal = Object.assign({ port: 22, username: 'root' }, sshOptions);
 
     let forwardOptionsLocal = Object.assign({ dstAddr: '0.0.0.0' }, forwardOptions);
 
