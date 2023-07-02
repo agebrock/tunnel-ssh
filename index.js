@@ -78,7 +78,7 @@ async function createTunnel( tunnelOptions, serverOptions, sshOptions, forwardOp
                 sshConnection.on('error', async () => {
                     sshConnection.isBroken = true;
                     sshConnection = await createSSHConnection(sshOptionslocal);
-                    addEventListener(sshConnection);
+                    addListenerSshConnection(sshConnection);
                 });
             }
         }
