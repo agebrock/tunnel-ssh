@@ -58,19 +58,19 @@ async function createTunnel( tunnelOptions, serverOptions, sshOptions, forwardOp
     return new Promise(async function (resolve, reject) {
 
         try {
-            server = await createServer(serverOptions);
-            addListenerServer(server);
-        } catch (e) {
-            return reject(e);
-        }
-
-        try {
             sshConnection = await createSSHConnection(sshOptionslocal);
             addListenerSshConnection(sshConnection);
         } catch (e) {
             if (server) {
                 server.close()
             }
+            return reject(e);
+        }
+        
+        try {
+            server = await createServer(serverOptions);
+            addListenerServer(server);
+        } catch (e) {
             return reject(e);
         }
         function addListenerSshConnection(sshConnection) {
