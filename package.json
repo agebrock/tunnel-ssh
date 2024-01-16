@@ -1,6 +1,6 @@
 {
   "name": "tunnel-ssh",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Easy extendable SSH tunnel",
   "main": "index.js",
   "publishConfig": {
@@ -26,6 +26,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "ssh2": "^1.14.0"
+    "ssh2": "^1.15.0"
   }
 }
