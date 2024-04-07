@@ -31,6 +31,11 @@ export interface TunnelOptions {
    * @default false
    */
   autoClose: boolean;
+  /*
+   * specifies if the tunnel should reconnect on error
+   * @default false
+  */
+  reconnectOnError: boolean;
 }
 
 /**
