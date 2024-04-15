@@ -120,7 +120,7 @@ async function createTunnel( tunnelOptions, serverOptions, sshOptions, forwardOp
                         if (server) {
                             server.close()
                         }
-                        throw err;
+                        sshConnection.emit("error", err);
                     } else {
                         clientConnection.pipe(stream).pipe(clientConnection);
                     }
